@@ -12,6 +12,8 @@
     <modules>
         <module>asm</module>
         <module>visitor</module>
+        <module>commons</module>
+        <module>deobfuscator</module>
     </modules>
 
     <properties>
@@ -56,18 +58,5 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.10.1</version>
         </dependency>
-        <dependency>
-            <groupId>edu.reversing</groupId>
-            <artifactId>asm</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>edu.reversing</groupId>
-            <artifactId>visitor</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
     </dependencies>
 </project>
