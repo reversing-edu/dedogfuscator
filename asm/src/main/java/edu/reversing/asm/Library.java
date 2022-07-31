@@ -41,16 +41,16 @@ public class Library implements Iterable<ClassNode> {
     /**
      * Reads a library from an instance of a {@link ZipFile}
      *
-     * @param zipFile the {@link ZipFile} you wish to load
+     * @param file the {@link ZipFile} you wish to load
      * @param flags option flags that can be used to modify the default behavior the classes
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(ZipFile zipFile, int flags) throws IOException {
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+    public void read(ZipFile file, int flags) throws IOException {
+        Enumeration<? extends ZipEntry> entries = file.entries();
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
             if (entry.getName().endsWith(".class")) {
-                read(zipFile.getInputStream(entry), flags);
+                read(file.getInputStream(entry), flags);
             } else {
                 resources.add(entry);
             }
@@ -60,13 +60,13 @@ public class Library implements Iterable<ClassNode> {
     /**
      * Reads an entry from a provided {@link InputStream}
      *
-     * @param inputStream the {@link InputStream} of the entry being added
-     * @param flags option flags that can be used to modify the default behavior the classes
+     * @param stream the {@link InputStream} of the entry being added
+     * @param flags option flags that can be used to modify the default behavior of the {@link ClassReader}
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(InputStream inputStream, int flags) throws IOException {
+    public void read(InputStream stream, int flags) throws IOException {
         ClassNode node = new ClassNode();
-        new ClassReader(inputStream).accept(node, flags);
+        new ClassReader(stream).accept(node, flags);
         add(node);
     }
 
@@ -74,7 +74,7 @@ public class Library implements Iterable<ClassNode> {
      * Reads an entry an array of bytes
      *
      * @param bytes the payload of the entry being added
-     * @param flags option flags that can be used to modify the default behavior the classes
+     * @param flags option flags that can be used to modify the default behavior of the {@link ClassReader}
      */
     public void read(byte[] bytes, int flags) {
         ClassNode node = new ClassNode();
@@ -85,23 +85,26 @@ public class Library implements Iterable<ClassNode> {
     /**
      * Writes the library to a file
      *
-     * todo: if multiple archives are loaded via add(ZipFile, int) should we save them as multiple archives? or should they be stored in 1 file like the method below already does
+     * TODO: if multiple archives are loaded via add(ZipFile, int) should we save them as multiple archives? or should they be stored in 1 file like the method below already does
      *
      * @param target the location to save the file
-     * @param flags option flags that can be used to modify the default behavior the classes
+     * @param flags option flags that can be used to modify the default behavior of the {@link ClassWriter}
      */
     public void write(Path target, int flags) {
-        try (JarOutputStream output = new JarOutputStream(new FileOutputStream(target.toFile()))) {
+        try (JarOutputStream stream = new JarOutputStream(new FileOutputStream(target.toFile()))) {
             for (Map.Entry<String, ClassNode> entry : entries.entrySet()) {
-                output.putNextEntry(new JarEntry(entry.getValue().name + ".class"));
+                stream.putNextEntry(new JarEntry(entry.getValue().name + ".class"));
                 ClassWriter writer = new ClassWriter(flags);
                 entry.getValue().accept(writer);
-                output.write(writer.toByteArray());
-                output.closeEntry();
+                stream.write(writer.toByteArray());
+                stream.closeEntry();
             }
-            for (ZipEntry entry : resources)
-                output.putNextEntry(entry);
-            output.flush();
+
+            for (ZipEntry entry : resources) {
+                stream.putNextEntry(entry);
+            }
+
+            stream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
