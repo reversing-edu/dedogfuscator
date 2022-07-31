@@ -1,12 +1,145 @@
 package edu.reversing.asm;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import java.nio.file.Path;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
-import java.util.Iterator;
-
+/**
+ * Represents the files loaded from a java archive (JAR)
+ *
+ * @author doga
+ * @author Cameron Upson
+ */
 public class Library implements Iterable<ClassNode> {
+
+    private final Map<String, ClassNode> entries = new HashMap<>();
+    private final List<ZipEntry> resources = new ArrayList<>();
+
+    /**
+     * Reads a library from a specified path
+     *
+     * @param source the file path of the archive you wish to load
+     * @throws IOException if an I/O error or zip format error has occurred
+     */
+    public void read(String source, int flags) throws IOException {
+        if (source.length() == 0)
+            throw new IllegalArgumentException("Please specify a path to the library you wish to load");
+        read(new ZipFile(source), flags);
+    }
+
+    /**
+     * Reads a library from an instance of a {@link ZipFile}
+     *
+     * @param zipFile the {@link ZipFile} you wish to load
+     * @param flags option flags that can be used to modify the default behavior the classes
+     * @throws IOException if an I/O error or zip format error has occurred
+     */
+    public void read(ZipFile zipFile, int flags) throws IOException {
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            if (entry.getName().endsWith(".class"))
+                read(zipFile.getInputStream(entry), flags);
+            else
+                resources.add(entry);
+        }
+    }
+
+    /**
+     * Reads an entry from a provided {@link InputStream}
+     *
+     * @param inputStream the {@link InputStream} of the entry being added
+     * @param flags option flags that can be used to modify the default behavior the classes
+     * @throws IOException if an I/O error or zip format error has occurred
+     */
+    public void read(InputStream inputStream, int flags) throws IOException {
+        ClassNode node = new ClassNode();
+        new ClassReader(inputStream).accept(node, flags);
+        add(node);
+    }
+
+    /**
+     * Reads an entry an array of bytes
+     *
+     * @param bytes the payload of the entry being added
+     * @param flags option flags that can be used to modify the default behavior the classes
+     */
+    public void read(byte[] bytes, int flags) {
+        ClassNode node = new ClassNode();
+        new ClassReader(bytes).accept(node, flags);
+        add(node);
+    }
+
+    /**
+     * Writes the library to a file
+     *
+     * todo: if multiple archives are loaded via add(ZipFile, int) should we save them as multiple archives? or should they be stored in 1 file like the method below already does
+     *
+     * @param target the location to save the file
+     * @param flags option flags that can be used to modify the default behavior the classes
+     */
+    public void write(Path target, int flags) {
+        try (JarOutputStream output = new JarOutputStream(new FileOutputStream(target.toFile()))) {
+            for (Map.Entry<String, ClassNode> entry : entries.entrySet()) {
+                output.putNextEntry(new JarEntry(entry.getValue().name + ".class"));
+                ClassWriter writer = new ClassWriter(flags);
+                entry.getValue().accept(writer);
+                output.write(writer.toByteArray());
+                output.closeEntry();
+            }
+            for (ZipEntry entry : resources)
+                output.putNextEntry(entry);
+            output.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Finds a {@link ClassNode} with a given name
+     *
+     * @param name the name of the class
+     * @return the class with the provided name
+     */
+    public ClassNode lookup(String name) {
+        return entries.get(name);
+    }
+
+    /**
+     * Adds a {@link ClassNode} to the entries
+     *
+     * @param cls the {@link ClassNode} to add
+     */
+    public void add(ClassNode cls) {
+        entries.put(cls.name, cls);
+    }
+
+    /**
+     * Checks to see if a {@link ClassNode} with a given name is loaded into the entries
+     *
+     * @param name the name of the class
+     * @return the result of whether it is (true) or not (false) in the entries
+     */
+    public boolean loaded(String name) {
+        return entries.containsKey(name);
+    }
+
+    /**
+     * @return an {@link Iterator} over the elements in this Library
+     */
     @Override
     public Iterator<ClassNode> iterator() {
-        return null;
+        return entries.values().iterator();
     }
 }
