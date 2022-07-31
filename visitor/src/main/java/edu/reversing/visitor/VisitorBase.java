@@ -1,8 +1,9 @@
 package edu.reversing.visitor;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-public abstract sealed class VisitorBase permits Visitor {
+public abstract sealed class VisitorBase implements Opcodes permits Visitor {
 
     public void preVisit() {
 

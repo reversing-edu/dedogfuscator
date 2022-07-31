@@ -23,24 +23,14 @@ public class Library implements Iterable<ClassNode> {
     private final Map<String, ClassNode> entries = new HashMap<>();
     private final List<ZipEntry> resources = new ArrayList<>();
 
-    public static Library from(Path source, int flags) {
-        Library library = new Library();
-        try {
-            library.read(source, flags);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return library;
-    }
-
     /**
      * Reads a library from a specified path
      *
      * @param source the file path of the archive you wish to load
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(Path source, int flags) throws IOException {
-        read(new ZipFile(source.toFile()), flags);
+    public void load(Path source, int flags) throws IOException {
+        load(new ZipFile(source.toFile()), flags);
     }
 
     /**
@@ -50,12 +40,12 @@ public class Library implements Iterable<ClassNode> {
      * @param flags option flags that can be used to modify the default behavior the classes
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(ZipFile file, int flags) throws IOException {
+    public void load(ZipFile file, int flags) throws IOException {
         Enumeration<? extends ZipEntry> entries = file.entries();
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
             if (entry.getName().endsWith(".class")) {
-                read(file.getInputStream(entry), flags);
+                load(file.getInputStream(entry), flags);
             } else {
                 resources.add(entry);
             }
@@ -69,7 +59,7 @@ public class Library implements Iterable<ClassNode> {
      * @param flags  option flags that can be used to modify the default behavior of the {@link ClassReader}
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(InputStream stream, int flags) throws IOException {
+    public void load(InputStream stream, int flags) throws IOException {
         ClassNode node = new ClassNode();
         new ClassReader(stream).accept(node, flags);
         add(node);
@@ -81,7 +71,7 @@ public class Library implements Iterable<ClassNode> {
      * @param bytes the payload of the entry being added
      * @param flags option flags that can be used to modify the default behavior of the {@link ClassReader}
      */
-    public void read(byte[] bytes, int flags) {
+    public void load(byte[] bytes, int flags) {
         ClassNode node = new ClassNode();
         new ClassReader(bytes).accept(node, flags);
         add(node);

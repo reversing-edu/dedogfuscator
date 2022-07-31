@@ -1,21 +1,18 @@
 package edu.reversing.visitor;
 
-import edu.reversing.asm.Library;
 import org.objectweb.asm.tree.*;
 
 public abstract non-sealed class Visitor extends VisitorBase {
 
     protected final VisitorContext context;
-    protected final Library library;
 
-    protected Visitor(VisitorContext context, Library library) {
-        this.library = library;
+    protected Visitor(VisitorContext context) {
         this.context = context;
     }
 
     public final void transform() {
         preVisit();
-        library.forEach(this::transformClass);
+        context.getLibrary().forEach(this::transformClass);
         postVisit();
     }
 
