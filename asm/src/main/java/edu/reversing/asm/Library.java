@@ -1,21 +1,16 @@
 package edu.reversing.asm;
 
-import java.nio.file.Path;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileOutputStream;
-
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Represents the files loaded from a java archive (JAR)
@@ -27,6 +22,16 @@ public class Library implements Iterable<ClassNode> {
 
     private final Map<String, ClassNode> entries = new HashMap<>();
     private final List<ZipEntry> resources = new ArrayList<>();
+
+    public static Library from(Path source, int flags) {
+        Library library = new Library();
+        try {
+            library.read(source, flags);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return library;
+    }
 
     /**
      * Reads a library from a specified path
@@ -41,7 +46,7 @@ public class Library implements Iterable<ClassNode> {
     /**
      * Reads a library from an instance of a {@link ZipFile}
      *
-     * @param file the {@link ZipFile} you wish to load
+     * @param file  the {@link ZipFile} you wish to load
      * @param flags option flags that can be used to modify the default behavior the classes
      * @throws IOException if an I/O error or zip format error has occurred
      */
@@ -61,7 +66,7 @@ public class Library implements Iterable<ClassNode> {
      * Reads an entry from a provided {@link InputStream}
      *
      * @param stream the {@link InputStream} of the entry being added
-     * @param flags option flags that can be used to modify the default behavior of the {@link ClassReader}
+     * @param flags  option flags that can be used to modify the default behavior of the {@link ClassReader}
      * @throws IOException if an I/O error or zip format error has occurred
      */
     public void read(InputStream stream, int flags) throws IOException {
@@ -84,11 +89,11 @@ public class Library implements Iterable<ClassNode> {
 
     /**
      * Writes the library to a file
-     *
+     * <p>
      * TODO: if multiple archives are loaded via add(ZipFile, int) should we save them as multiple archives? or should they be stored in 1 file like the method below already does
      *
      * @param target the location to save the file
-     * @param flags option flags that can be used to modify the default behavior of the {@link ClassWriter}
+     * @param flags  option flags that can be used to modify the default behavior of the {@link ClassWriter}
      */
     public void write(Path target, int flags) {
         try (JarOutputStream stream = new JarOutputStream(new FileOutputStream(target.toFile()))) {
