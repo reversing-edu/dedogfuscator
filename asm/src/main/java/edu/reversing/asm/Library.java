@@ -1,15 +1,17 @@
 package edu.reversing.asm;
 
-import java.io.FileOutputStream;
+import java.nio.file.Path;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileOutputStream;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
+
 import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -32,10 +34,8 @@ public class Library implements Iterable<ClassNode> {
      * @param source the file path of the archive you wish to load
      * @throws IOException if an I/O error or zip format error has occurred
      */
-    public void read(String source, int flags) throws IOException {
-        if (source.length() == 0)
-            throw new IllegalArgumentException("Please specify a path to the library you wish to load");
-        read(new ZipFile(source), flags);
+    public void read(Path source, int flags) throws IOException {
+        read(new ZipFile(source.toFile()), flags);
     }
 
     /**
@@ -49,10 +49,11 @@ public class Library implements Iterable<ClassNode> {
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
-            if (entry.getName().endsWith(".class"))
+            if (entry.getName().endsWith(".class")) {
                 read(zipFile.getInputStream(entry), flags);
-            else
+            } else {
                 resources.add(entry);
+            }
         }
     }
 
