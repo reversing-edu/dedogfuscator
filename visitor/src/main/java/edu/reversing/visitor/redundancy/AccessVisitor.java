@@ -31,6 +31,7 @@ public class AccessVisitor extends Visitor {
             if ((modifier & ACC_PRIVATE) > 0) {
                 modifier &= ~ACC_PRIVATE;
             }
+
             modifier |= Modifier.PUBLIC;
         }
 
