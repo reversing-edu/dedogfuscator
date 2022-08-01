@@ -1,5 +1,6 @@
 package edu.reversing.visitor.flow;
 
+import com.google.inject.Inject;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;
@@ -12,6 +13,7 @@ public class FlowVisitor extends Visitor {
     private int generated = 0;
     private int gotos = 0;
 
+    @Inject
     public FlowVisitor(VisitorContext context) {
         super(context);
     }

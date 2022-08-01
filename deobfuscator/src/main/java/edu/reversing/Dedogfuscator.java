@@ -1,6 +1,6 @@
 package edu.reversing;
 
-import edu.reversing.asm.Hierarchy;
+import com.google.inject.*;
 import edu.reversing.asm.Library;
 import edu.reversing.visitor.VisitorContext;
 import edu.reversing.visitor.flow.FlowVisitor;
@@ -10,26 +10,30 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Dedogfuscator {
 
     public static void main(String[] args) throws IOException {
-        Library library = new Library();
-        Path path = Paths.get(args[0]);
-        library.load(path, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        Injector injector = Guice.createInjector(new Module());
+        Library library = injector.getInstance(Library.class);
+        library.load(Paths.get(args[0]), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
-        VisitorContext context = new VisitorContext(
-                library,
-                new Hierarchy(library)
-        );
-
-        context.add(new AccessVisitor(context));
-        context.add(new TryCatchVisitor(context));
-        context.add(new FlowVisitor(context));
+        VisitorContext context = injector.getInstance(VisitorContext.class);
+        context.add(injector.getInstance(AccessVisitor.class));
+        context.add(injector.getInstance(TryCatchVisitor.class));
+        context.add(injector.getInstance(FlowVisitor.class));
         context.transform();
 
-        library.write(path.getParent().resolve("trans-" + path.getFileName()), ClassWriter.COMPUTE_MAXS);
+        library.write(Paths.get(args[1]), ClassWriter.COMPUTE_MAXS);
+    }
+
+    private static class Module extends AbstractModule {
+
+        @Override
+        protected void configure() {
+            //i dont know if this is the correct way to do it
+            bind(Library.class).asEagerSingleton();
+        }
     }
 }

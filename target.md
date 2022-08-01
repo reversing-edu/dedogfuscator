@@ -1,23 +1,26 @@
-
-- Unused methods 
+- Unused methods
 - Multipliers
 - Try catch blocks
 - Opaque predicates
 - Dummy and unused parameters
 - Block sorting
-- for method calls that use the same parameter every time (constant parameter) they can be inlined or changed to a constant field reference?
+- for method calls that use the same parameter every time (constant parameter) they can be inlined
+  or changed to a constant field reference?
 - Block sorting (cfg)
 - Source compatible naming including the ability to rename from a file consisting of mappings
 - Access modifiers (make everything public?)
 - redundant gotos
 - dead/unreachable code
-- Exploits for moving members to their original classes, maybe ordering too. See https://github.com/alexanderhenne/osrs-exploits/blob/master/src/main/java/com/uniquepassive/osrsexploits/GamepackMethodOriginalClassFinder.java
+- Exploits for moving members to their original classes, maybe ordering too.
+  See https://github.com/alexanderhenne/osrs-exploits/blob/master/src/main/java/com/uniquepassive/osrsexploits/GamepackMethodOriginalClassFinder.java
 - Strahler number (I think copy propagation is a more specific term for the obfuscation)
 - Remove unused local vars
 - convert ints to character literals where appropriate
-- Remove empty classes? After moving methods to their original classes and moving fields there should be some 
+- Remove empty classes? After moving methods to their original classes and moving fields there
+  should be some
 - source level: cleaner scopes and branching (favour early return over else)
-- Statement ordering (via AST). If statements, artihmetic operations, operation precedence in general. We can do this at source level maybe easier
+- Statement ordering (via AST). If statements, artihmetic operations, operation precedence in
+  general. We can do this at source level maybe easier
 - source level: transform loops i.e for each/for i > while etc
 - hexadecimal in specific numbers?
 - increment preference

@@ -1,5 +1,6 @@
 package edu.reversing.visitor.redundancy;
 
+import com.google.inject.Inject;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;
@@ -11,6 +12,7 @@ public class TryCatchVisitor extends Visitor {
 
     private int removed = 0;
 
+    @Inject
     public TryCatchVisitor(VisitorContext context) {
         super(context);
     }
