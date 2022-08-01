@@ -20,9 +20,9 @@ public class Dedogfuscator {
         library.load(Paths.get(args[0]), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
         VisitorContext context = injector.getInstance(VisitorContext.class);
-        context.add(injector.getInstance(AccessVisitor.class));
-        context.add(injector.getInstance(TryCatchVisitor.class));
-        context.add(injector.getInstance(FlowVisitor.class));
+        context.addFirst(injector.getInstance(FlowVisitor.class));
+        context.addFirst(injector.getInstance(TryCatchVisitor.class));
+        context.addFirst(injector.getInstance(AccessVisitor.class));
         context.transform();
 
         library.write(Paths.get(args[1]), ClassWriter.COMPUTE_MAXS);

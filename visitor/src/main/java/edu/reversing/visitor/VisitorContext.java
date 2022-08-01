@@ -29,8 +29,8 @@ public class VisitorContext {
         return hierarchy;
     }
 
-    public void add(Visitor visitor) {
-        visitors.add(visitor);
+    public void addFirst(Visitor visitor) {
+        visitors.addFirst(visitor);
     }
 
     public void transform() {
