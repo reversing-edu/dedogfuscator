@@ -29,7 +29,7 @@ public class VisitorContext {
     }
 
     public void add(Visitor visitor) {
-        visitors.addFirst(visitor);
+        visitors.add(visitor);
     }
 
     public void transform() {

@@ -34,10 +34,6 @@ public class FlowAnalyzer extends Analyzer<BasicValue> {
         }
     }
 
-    private boolean terminates(int type) {
-        return type == LABEL || type == JUMP_INSN || type == TABLESWITCH_INSN || type == LOOKUPSWITCH_INSN;
-    }
-
     @Override
     protected void newControlFlowEdge(int insnIndex, int successorIndex) {
         BasicBlock current = blocks.stream().filter(x -> x.contains(insnIndex)).findFirst().orElse(null);
@@ -55,5 +51,16 @@ public class FlowAnalyzer extends Analyzer<BasicValue> {
         }
 
         current.getChildren().add(current);
+    }
+
+    private boolean terminates(int type) {
+        return type == LABEL
+                || type == JUMP_INSN
+                || type == TABLESWITCH_INSN
+                || type == LOOKUPSWITCH_INSN;
+    }
+
+    public List<BasicBlock> getBlocks() {
+        return blocks;
     }
 }

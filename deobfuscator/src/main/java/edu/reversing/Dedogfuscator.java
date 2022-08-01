@@ -3,7 +3,9 @@ package edu.reversing;
 import edu.reversing.asm.Hierarchy;
 import edu.reversing.asm.Library;
 import edu.reversing.visitor.VisitorContext;
+import edu.reversing.visitor.flow.FlowVisitor;
 import edu.reversing.visitor.redundancy.AccessVisitor;
+import edu.reversing.visitor.redundancy.TryCatchVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -24,6 +26,8 @@ public class Dedogfuscator {
         );
 
         context.add(new AccessVisitor(context));
+        context.add(new TryCatchVisitor(context));
+        context.add(new FlowVisitor(context));
         context.transform();
 
         library.write(path.getParent().resolve("trans-" + path.getFileName()), ClassWriter.COMPUTE_MAXS);

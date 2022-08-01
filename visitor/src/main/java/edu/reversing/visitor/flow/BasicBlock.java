@@ -65,4 +65,19 @@ public class BasicBlock {
     public boolean contains(int index) {
         return index >= start && index <= end;
     }
+
+    public BasicBlock getRoot() {
+        BasicBlock root = this;
+        BasicBlock pred = predecessor;
+        while (pred != null) {
+            root = pred;
+            pred = root.predecessor;
+        }
+        return root;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
