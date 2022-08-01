@@ -1,9 +1,12 @@
 package edu.reversing.visitor.flow;
 
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.util.Printer;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class BasicBlock {
 
@@ -76,8 +79,24 @@ public class BasicBlock {
         return root;
     }
 
+    public List<AbstractInsnNode> getInstructions() {
+        return IntStream.range(start, end).mapToObj(i -> method.instructions.get(i)).collect(Collectors.toList());
+    }
+
     @Override
     public String toString() {
-        return super.toString();
+        StringBuilder builder = new StringBuilder("Block {");
+        builder.append("\n");
+        for (AbstractInsnNode instruction : getInstructions()) {
+            if (instruction.getOpcode() == -1) {
+                continue;
+            }
+
+            builder.append("\t");
+            builder.append(Printer.OPCODES[instruction.getOpcode()]);
+            builder.append("\n");
+        }
+        builder.append("}");
+        return builder.toString();
     }
 }

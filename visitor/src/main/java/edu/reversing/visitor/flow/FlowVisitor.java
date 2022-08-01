@@ -9,7 +9,7 @@ import java.util.*;
 
 public class FlowVisitor extends Visitor {
 
-    private int blocks = 0;
+    private int generated = 0;
     private int gotos = 0;
 
     public FlowVisitor(VisitorContext context) {
@@ -22,6 +22,8 @@ public class FlowVisitor extends Visitor {
             return;
         }
 
+        removeRedundantGotos(method);
+
         FlowAnalyzer analyzer = new FlowAnalyzer();
         try {
             analyzer.analyze(cls.name, method);
@@ -30,12 +32,10 @@ public class FlowVisitor extends Visitor {
         }
 
         dfs(method, analyzer);
-        blocks += analyzer.getBlocks().size();
+        generated += analyzer.getBlocks().size();
 
         //TODO dfs works to sort blocks but it leaves asm InsnList broken and with null insns
         //this could require reproducing labels or using AbstractInsnNode#clone instead of adding the insn directly (line 64)
-
-        //removeRedundantGotos(method);
     }
 
     public void dfs(MethodNode method, FlowAnalyzer analyzer) {
@@ -45,7 +45,7 @@ public class FlowVisitor extends Visitor {
         }
 
         InsnList instructions = new InsnList();
-        Queue<BasicBlock> stack = Collections.asLifoQueue(new ArrayDeque<>());
+        Queue<BasicBlock> stack = new LinkedList<>();
         stack.add(blocks.get(0));
         Set<BasicBlock> visited = new HashSet<>();
         while (!stack.isEmpty()) {
@@ -62,7 +62,8 @@ public class FlowVisitor extends Visitor {
                 }
 
                 for (int i = current.getStart(); i < current.getEnd(); i++) {
-                    instructions.add(method.instructions.get(i));
+                    AbstractInsnNode instruction = method.instructions.get(i);
+                    instructions.add(instruction);
                 }
             }
         }
@@ -91,6 +92,6 @@ public class FlowVisitor extends Visitor {
 
     @Override
     public void postVisit() {
-        System.out.println("Transformed " + blocks + " basic blocks and removed " + gotos + " gotos");
+        System.out.println("Generated " + generated + " basic blocks and removed " + gotos + " gotos");
     }
 }
