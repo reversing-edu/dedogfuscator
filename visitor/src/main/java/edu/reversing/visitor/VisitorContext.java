@@ -1,12 +1,12 @@
 package edu.reversing.visitor;
 
+import com.google.inject.Inject;
 import edu.reversing.asm.Hierarchy;
 import edu.reversing.asm.Library;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-//TODO dependency injection
 public class VisitorContext {
 
     private final Deque<Visitor> visitors;
@@ -14,6 +14,7 @@ public class VisitorContext {
     private final Library library;
     private final Hierarchy hierarchy;
 
+    @Inject
     public VisitorContext(Library library, Hierarchy hierarchy) {
         this.visitors = new ArrayDeque<>();
         this.library = library;
@@ -28,7 +29,7 @@ public class VisitorContext {
         return hierarchy;
     }
 
-    public void add(Visitor visitor) {
+    public void addFirst(Visitor visitor) {
         visitors.addFirst(visitor);
     }
 

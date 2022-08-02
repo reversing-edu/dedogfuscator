@@ -1,5 +1,6 @@
 package edu.reversing.asm;
 
+import com.google.inject.Inject;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
@@ -16,6 +17,7 @@ public class Hierarchy {
     private final Map<String, List<ClassNode>> children = new HashMap<>();
     private final Map<String, List<ClassNode>> parents = new HashMap<>();
 
+    @Inject
     public Hierarchy(Library library) {
         this.library = library;
 
