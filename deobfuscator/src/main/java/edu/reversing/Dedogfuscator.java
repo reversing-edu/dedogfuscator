@@ -2,6 +2,7 @@ package edu.reversing;
 
 import com.google.inject.*;
 import edu.reversing.asm.Library;
+import edu.reversing.configuration.Configuration;
 import edu.reversing.visitor.VisitorContext;
 import edu.reversing.visitor.flow.FlowVisitor;
 import edu.reversing.visitor.redundancy.AccessVisitor;
@@ -14,18 +15,22 @@ import java.nio.file.Paths;
 
 public class Dedogfuscator {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String... args) throws IOException {
+        Configuration configuration = Configuration.valueOf(args);
+
         Injector injector = Guice.createInjector(new Module());
         Library library = injector.getInstance(Library.class);
-        library.load(Paths.get(args[0]), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        library.load(configuration.getInput(), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
         VisitorContext context = injector.getInstance(VisitorContext.class);
+
+        //i dont like this
         context.addFirst(injector.getInstance(FlowVisitor.class));
         context.addFirst(injector.getInstance(TryCatchVisitor.class));
         context.addFirst(injector.getInstance(AccessVisitor.class));
         context.transform();
 
-        library.write(Paths.get(args[1]), ClassWriter.COMPUTE_MAXS);
+        library.write(configuration.getOutput(), ClassWriter.COMPUTE_MAXS);
     }
 
     private static class Module extends AbstractModule {
