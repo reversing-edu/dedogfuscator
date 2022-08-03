@@ -2,27 +2,23 @@ package edu.reversing.asm.tree;
 
 import org.objectweb.asm.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ClassNode extends org.objectweb.asm.tree.ClassNode {
 
-    //we need to use our FieldNode and MethodNode instead of asms
-    //i don't know if this is the best or correct way to do it
-    //if you can think of any side effects or anything this would break please say
-
-    public final List<FieldNode> fields = new ArrayList<>();
-    public final List<MethodNode> methods = new ArrayList<>();
+    public final List<FieldNode> fields;
+    public final List<MethodNode> methods;
 
     public ClassNode() {
         super(Opcodes.ASM9);
+        this.fields = new BiList<>(super.fields);
+        this.methods = new BiList<>(super.methods);
     }
 
     @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
         FieldNode field = new FieldNode(access, this.name, name, descriptor, signature, value);
         fields.add(field);
-        super.fields.add(field);
         return field;
     }
 
@@ -30,7 +26,41 @@ public class ClassNode extends org.objectweb.asm.tree.ClassNode {
     public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
         MethodNode method = new MethodNode(access, this.name, name, descriptor, signature, exceptions);
         methods.add(method);
-        super.methods.add(method);
         return method;
+    }
+
+    //still dont like this
+    private static class BiList<T> extends ArrayList<T> {
+
+        private final List<? super T> original;
+
+        private BiList(List<? super T> original) {
+            this.original = original;
+        }
+
+        @Override
+        public boolean add(T t) {
+            return original.add(t) && super.add(t);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return original.remove(o) && super.remove(o);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends T> c) {
+            return original.addAll(c) && super.addAll(c);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            return original.removeAll(c) && super.removeAll(c);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            return original.retainAll(c) && super.retainAll(c);
+        }
     }
 }
