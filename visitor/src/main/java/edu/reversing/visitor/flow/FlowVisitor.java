@@ -1,6 +1,8 @@
 package edu.reversing.visitor.flow;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.ClassNode;
+import edu.reversing.asm.tree.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;

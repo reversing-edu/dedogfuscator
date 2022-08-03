@@ -1,6 +1,6 @@
 package edu.reversing.visitor;
 
-import org.objectweb.asm.tree.*;
+import edu.reversing.asm.tree.*;
 
 public abstract non-sealed class Visitor extends VisitorBase {
 

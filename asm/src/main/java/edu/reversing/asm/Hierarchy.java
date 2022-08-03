@@ -1,9 +1,9 @@
 package edu.reversing.asm;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.ClassNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.util.*;
 import java.util.function.Consumer;

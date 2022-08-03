@@ -1,8 +1,8 @@
 package edu.reversing.asm;
 
+import edu.reversing.asm.tree.ClassNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -72,9 +72,9 @@ public class Library implements Iterable<ClassNode> {
      * @param flags option flags that can be used to modify the default behavior of the {@link ClassReader}
      */
     public void load(byte[] bytes, int flags) {
-        ClassNode node = new ClassNode();
-        new ClassReader(bytes).accept(node, flags);
-        add(node);
+        ClassNode cls = new ClassNode();
+        new ClassReader(bytes).accept(cls, flags);
+        add(cls);
     }
 
     /**

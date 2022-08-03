@@ -3,7 +3,7 @@ package edu.reversing.visitor.redundancy;
 import com.google.inject.Inject;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
-import org.objectweb.asm.tree.*;
+import edu.reversing.asm.tree.*;
 
 import java.lang.reflect.Modifier;
 

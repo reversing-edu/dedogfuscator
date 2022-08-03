@@ -3,7 +3,9 @@ package edu.reversing.visitor.redundancy;
 import com.google.inject.Inject;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
-import org.objectweb.asm.tree.*;
+import edu.reversing.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +28,9 @@ public class TryCatchVisitor extends Visitor {
             }
         }
 
-        List<TryCatchBlockNode> skip = new ArrayList<>();
+        List<TryCatchBlockNode> remove = new ArrayList<>();
         for (TryCatchBlockNode tcb : runtime) {
-            if (skip.contains(tcb)) {
+            if (remove.contains(tcb)) {
                 method.tryCatchBlocks.remove(tcb);
                 continue;
             }
@@ -39,7 +41,7 @@ public class TryCatchVisitor extends Visitor {
                     overlapping.add(check);
                 }
             }
-            skip.addAll(overlapping);
+            remove.addAll(overlapping);
 
             AbstractInsnNode terminator = tcb.handler.getNext();
             while (!terminates(terminator.getOpcode())) {
