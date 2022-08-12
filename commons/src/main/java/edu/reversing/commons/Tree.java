@@ -13,4 +13,10 @@ public class Tree<T extends Tree<T>> extends LinkedList<T> {
     public void setParent(T parent) {
         this.parent = parent;
     }
+
+    @Override
+    public void addFirst(T t) {
+        t.setParent((T) this);
+        super.addFirst(t);
+    }
 }

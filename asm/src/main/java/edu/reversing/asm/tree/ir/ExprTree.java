@@ -1,5 +1,6 @@
 package edu.reversing.asm.tree.ir;
 
+import edu.reversing.asm.commons.Printing;
 import edu.reversing.asm.tree.MethodNode;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -121,7 +122,7 @@ public class ExprTree extends Expr {
             }
 
             Expr expr = null;
-            if (instruction.getType() == AbstractInsnNode.LDC_INSN) {
+            if (type == AbstractInsnNode.LDC_INSN) {
                 Object cst = ((LdcInsnNode) instruction).cst;
                 if (cst instanceof Number) {
                     expr = new Expr(this, instruction, consume, produce);
@@ -131,11 +132,11 @@ public class ExprTree extends Expr {
             }
 
             if (opcode >= IRETURN && opcode <= RETURN) {
-                expr = new Expr(this, instruction, consume, produce);
+                expr = new ReturnExpr(this, instruction, consume, produce);
             }
 
             if (expr == null) {
-                switch (instruction.getType()) {
+                switch (type) {
                     case FIELD_INSN, METHOD_INSN -> expr = new Expr(this, instruction, consume, produce);
 
                     case JUMP_INSN -> {
@@ -144,6 +145,8 @@ public class ExprTree extends Expr {
                         expr = jn;
                     }
 
+                    case LABEL -> expr = new TargetExpr(this, instruction, consume, produce);
+
                     default -> expr = new Expr(this, instruction, consume, produce);
                 }
             }
@@ -151,19 +154,17 @@ public class ExprTree extends Expr {
             exprs[i] = expr;
         }
 
-        for (int i = 0; i < exprs.length; i++) {
+        //TODO this needs to be restructured. it works but expr.parent isn't set until addFirst is called
+       /* for (int i = 0; i < exprs.length; i++) {
             Expr expr = exprs[i];
-            AbstractInsnNode instruction = expr.getInstruction();
-            if (instruction.getType() != LABEL) {
+            if (!(expr instanceof TargetExpr target)) {
                 continue;
             }
 
-            TargetExpr target = new TargetExpr(this, instruction, expr.consume, expr.produce);
             boolean targeted = false;
             for (JumpExpr jn : jumps) {
-                //TODO this doesnt work, i think need to check next instruction not info
-                //info was used in old asm
-                if (jn.getInstruction().label.getLabel().info == exprs[i].getInstruction()) {
+                if (jn.getInstruction().label == target.getInstruction()) {
+                    System.out.println("woo " + jn + " -> " + Printing.toString(target.getInstruction()));
                     jn.setTarget(target);
                     targeted = true;
                 }
@@ -173,9 +174,9 @@ public class ExprTree extends Expr {
                 exprs[i] = target;
             } else {
                 LabelNode label = new LabelNode(((LabelNode) exprs[i].getInstruction()).getLabel());
-                exprs[i].setInstruction(label); //TODO breaks shit
+                exprs[i].setInstruction(label);
             }
-        }
+        }*/
 
         ptr = instructions.length - 1;
 
@@ -244,8 +245,8 @@ public class ExprTree extends Expr {
 
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (Expr n : this) {
-            builder.append(n);
+        for (Expr child : this) {
+            builder.append(child);
             builder.append('\n');
         }
         return builder.toString().trim();
