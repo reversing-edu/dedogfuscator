@@ -60,7 +60,7 @@ public class ExprTree extends Expr {
 
     //TODO add other expr types
     public void build(boolean forceNew) {
-        if (exprs != null && forceNew) {
+        if (exprs != null && !forceNew) {
             return;
         }
 
@@ -158,22 +158,22 @@ public class ExprTree extends Expr {
                 continue;
             }
 
-            TargetExpr t = new TargetExpr(this, instruction, expr.consume, expr.produce);
+            TargetExpr target = new TargetExpr(this, instruction, expr.consume, expr.produce);
             boolean targeted = false;
             for (JumpExpr jn : jumps) {
                 //TODO this doesnt work, i think need to check next instruction not info
                 //info was used in old asm
                 if (jn.getInstruction().label.getLabel().info == exprs[i].getInstruction()) {
-                    jn.setTarget(t);
+                    jn.setTarget(target);
                     targeted = true;
                 }
             }
 
             if (targeted) {
-                exprs[i] = t;
+                exprs[i] = target;
             } else {
                 LabelNode label = new LabelNode(((LabelNode) exprs[i].getInstruction()).getLabel());
-                //exprs[i].setInstruction(label); //TODO breaks shit
+                exprs[i].setInstruction(label); //TODO breaks shit
             }
         }
 
