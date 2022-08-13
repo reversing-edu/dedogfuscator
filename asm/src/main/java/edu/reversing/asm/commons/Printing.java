@@ -1,5 +1,6 @@
 package edu.reversing.asm.commons;
 
+import edu.reversing.asm.tree.ir.Expr;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Printer;
 
@@ -43,8 +44,7 @@ public class Printing {
             }
 
             case VAR_INSN -> {
-                builder.append(' ');
-                builder.append('#');
+                builder.append('_');
                 builder.append(((VarInsnNode) instruction).var);
             }
 
@@ -63,8 +63,7 @@ public class Printing {
 
             case IINC_INSN -> {
                 IincInsnNode increment = (IincInsnNode) instruction;
-                builder.append(' ');
-                builder.append('#');
+                builder.append('_');
                 builder.append(increment.var);
                 builder.append(' ');
                 builder.append(increment.incr);
@@ -84,5 +83,9 @@ public class Printing {
         }
 
         return builder.toString();
+    }
+
+    public static String toString(Expr expr) {
+        return toString(expr.getInstruction());
     }
 }

@@ -1,6 +1,5 @@
 package edu.reversing.asm.tree.ir;
 
-import edu.reversing.asm.commons.Printing;
 import edu.reversing.asm.tree.MethodNode;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -87,10 +86,10 @@ public class ExprTree extends Expr {
                         case Opcodes.GETSTATIC -> produce = d == 'D' || d == 'J' ? 2 : 1;
                         case Opcodes.GETFIELD -> {
                             consume = 1;
-                            produce = d == 'J' || d == 'D' ? 2 : 1;
+                            produce = d == 'D' || d == 'J' ? 2 : 1;
                         }
                         case Opcodes.PUTSTATIC -> consume = d == 'D' || d == 'J' ? 2 : 1;
-                        case Opcodes.PUTFIELD -> consume = d == 'J' || d == 'D' ? 3 : 2;
+                        case Opcodes.PUTFIELD -> consume = d == 'D' || d == 'J' ? 3 : 2;
                     }
                 }
 
@@ -122,61 +121,37 @@ public class ExprTree extends Expr {
             }
 
             Expr expr = null;
-            if (type == AbstractInsnNode.LDC_INSN) {
+            if (instruction instanceof LdcInsnNode) {
                 Object cst = ((LdcInsnNode) instruction).cst;
                 if (cst instanceof Number) {
                     expr = new Expr(this, instruction, consume, produce);
                 }
             } else if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
                 expr = new Expr(this, instruction, consume, produce);
-            }
-
-            if (opcode >= IRETURN && opcode <= RETURN) {
+            } else if (opcode >= IRETURN && opcode <= RETURN) {
                 expr = new ReturnExpr(this, instruction, consume, produce);
-            }
-
-            if (expr == null) {
-                switch (type) {
-                    case FIELD_INSN, METHOD_INSN -> expr = new Expr(this, instruction, consume, produce);
-
-                    case JUMP_INSN -> {
-                        JumpExpr jn = new JumpExpr(this, instruction, consume, produce);
-                        jumps.add(jn);
-                        expr = jn;
-                    }
-
-                    case LABEL -> expr = new TargetExpr(this, instruction, consume, produce);
-
-                    default -> expr = new Expr(this, instruction, consume, produce);
-                }
+            } else if (opcode >= ILOAD && opcode <= ALOAD) {
+                expr = new VarExpr(this, instruction, consume, produce);
+            } else if (opcode >= ISTORE && opcode <= ASTORE) {
+                expr = new StoreExpr(this, instruction, consume, produce);
+            } else if (instruction instanceof IincInsnNode) {
+                expr = new IncrementExpr(this, instruction, consume, produce);
+            } else if (instruction instanceof JumpInsnNode) {
+                JumpExpr jn = new JumpExpr(this, instruction, consume, produce);
+                jumps.add(jn);
+                expr = jn;
+            } else if (instruction instanceof LabelNode) {
+                expr = new TargetExpr(this, instruction, consume, produce);
+            } else if (instruction instanceof FieldInsnNode) {
+                expr = new Expr(this, instruction, consume, produce);
+            } else if (instruction instanceof MethodInsnNode) {
+                expr = new Expr(this, instruction, consume, produce);
+            } else {
+                expr = new Expr(this, instruction, consume, produce);
             }
 
             exprs[i] = expr;
         }
-
-        //TODO this needs to be restructured. it works but expr.parent isn't set until addFirst is called
-       /* for (int i = 0; i < exprs.length; i++) {
-            Expr expr = exprs[i];
-            if (!(expr instanceof TargetExpr target)) {
-                continue;
-            }
-
-            boolean targeted = false;
-            for (JumpExpr jn : jumps) {
-                if (jn.getInstruction().label == target.getInstruction()) {
-                    System.out.println("woo " + jn + " -> " + Printing.toString(target.getInstruction()));
-                    jn.setTarget(target);
-                    targeted = true;
-                }
-            }
-
-            if (targeted) {
-                exprs[i] = target;
-            } else {
-                LabelNode label = new LabelNode(((LabelNode) exprs[i].getInstruction()).getLabel());
-                exprs[i].setInstruction(label);
-            }
-        }*/
 
         ptr = instructions.length - 1;
 
@@ -210,34 +185,29 @@ public class ExprTree extends Expr {
             return expr;
         }
 
-        int consume = expr.tryCatchMeta != null && expr.tryCatchMeta.isHandler() ? 0 : expr.consume;
-        int remaining = consume;
-        while (remaining != 0) {
+        int consume = expr.consume;
+        while (consume != 0) {
             Expr next = seek();
             if (next == null) {
                 break;
             }
 
             int opcode = next.getOpcode();
-            if (opcode == GOTO || opcode == JSR) {
-                JumpExpr jump = (JumpExpr) next;
-                if (jump.getTarget() != null && jump.getTarget().resolve() == expr) {
-                    remaining = consume;
-                }
-            } else if (opcode == MONITOREXIT && expr.getOpcode() == ATHROW) {
-                next.remaining = 1;
+            if (opcode == MONITOREXIT && expr.getOpcode() == ATHROW) {
+                next.produce = 1;
             }
 
             expr.addFirst(next);
-            int delta = remaining - next.remaining;
+
+            int delta = consume - next.produce;
             if (delta < 0) {
-                expr.remaining += -delta;
-                next.remaining = 0;
+                expr.produce -= delta;
+                next.produce = 0;
                 break;
             }
 
-            remaining -= next.remaining;
-            next.remaining = 0;
+            consume -= next.produce;
+            next.produce = 0;
         }
 
         return expr;

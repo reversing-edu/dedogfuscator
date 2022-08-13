@@ -8,10 +8,13 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 public class Expr extends Tree<Expr> implements Opcodes {
 
     private final ExprTree tree;
+
     protected int consume;
     protected int produce;
     protected int remaining;
+
     protected TryCatchMeta tryCatchMeta;
+
     private AbstractInsnNode instruction;
 
     protected Expr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
@@ -101,7 +104,7 @@ public class Expr extends Tree<Expr> implements Opcodes {
         StringBuilder sb = new StringBuilder();
         //TODO add toString to each Expr rather than using instruction.toString
         //since Exprs have more data
-        sb.append(Printing.toString(instruction));
+        sb.append(Printing.toString(this));
         for (Expr child : this) {
             sb.append('\n');
             sb.append("  ".repeat(Math.max(0, i)));
