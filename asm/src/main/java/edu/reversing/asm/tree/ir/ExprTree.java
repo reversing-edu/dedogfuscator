@@ -1,5 +1,6 @@
 package edu.reversing.asm.tree.ir;
 
+import edu.reversing.asm.commons.Printing;
 import edu.reversing.asm.tree.MethodNode;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -120,12 +121,9 @@ public class ExprTree extends Expr {
                 default -> throw new RuntimeException();
             }
 
-            Expr expr = null;
+            Expr expr;
             if (instruction instanceof LdcInsnNode) {
-                Object cst = ((LdcInsnNode) instruction).cst;
-                if (cst instanceof Number) {
-                    expr = new Expr(this, instruction, consume, produce);
-                }
+                expr = new Expr(this, instruction, consume, produce);
             } else if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
                 expr = new Expr(this, instruction, consume, produce);
             } else if (opcode >= IRETURN && opcode <= RETURN) {
@@ -143,7 +141,7 @@ public class ExprTree extends Expr {
             } else if (instruction instanceof LabelNode) {
                 expr = new TargetExpr(this, instruction, consume, produce);
             } else if (instruction instanceof FieldInsnNode) {
-                expr = new Expr(this, instruction, consume, produce);
+                expr = new FieldExpr(this, instruction, consume, produce);
             } else if (instruction instanceof MethodInsnNode) {
                 expr = new Expr(this, instruction, consume, produce);
             } else {

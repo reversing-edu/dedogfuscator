@@ -85,7 +85,4 @@ public class Printing {
         return builder.toString();
     }
 
-    public static String toString(Expr expr) {
-        return toString(expr.getInstruction());
-    }
 }

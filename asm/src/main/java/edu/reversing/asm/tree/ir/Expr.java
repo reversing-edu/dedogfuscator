@@ -102,9 +102,7 @@ public class Expr extends Tree<Expr> implements Opcodes {
 
     public String toString(int i) {
         StringBuilder sb = new StringBuilder();
-        //TODO add toString to each Expr rather than using instruction.toString
-        //since Exprs have more data
-        sb.append(Printing.toString(this));
+        sb.append(Printing.toString(instruction));
         for (Expr child : this) {
             sb.append('\n');
             sb.append("  ".repeat(Math.max(0, i)));

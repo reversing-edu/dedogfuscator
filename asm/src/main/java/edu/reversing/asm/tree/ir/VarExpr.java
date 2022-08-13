@@ -7,4 +7,9 @@ public class VarExpr extends LVTExpr {
     public VarExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
         super(tree, instruction, consume, produce);
     }
+
+    @Override
+    public String toSourceString() {
+        return "var" + getIndex();
+    }
 }
