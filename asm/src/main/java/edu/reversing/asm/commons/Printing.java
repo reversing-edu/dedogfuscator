@@ -77,7 +77,13 @@ public class Printing {
                 builder.append(multianewarray.dims);
             }
 
-            case JUMP_INSN, TABLESWITCH_INSN, LOOKUPSWITCH_INSN -> {
+            case JUMP_INSN -> {
+                JumpInsnNode jump = (JumpInsnNode) instruction;
+                builder.append(' ');
+                builder.append(jump.label);
+            }
+
+            case TABLESWITCH_INSN, LOOKUPSWITCH_INSN -> {
 
             }
         }

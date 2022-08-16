@@ -1,13 +1,10 @@
 package edu.reversing.visitor.flow;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.objectweb.asm.tree.AbstractInsnNode.*;
 
 public class FlowAnalyzer extends Analyzer<BasicValue> {
 
@@ -25,7 +22,7 @@ public class FlowAnalyzer extends Analyzer<BasicValue> {
         for (int i = 0; i < method.instructions.size(); i++) {
             block.setEnd(block.getEnd() + 1);
             AbstractInsnNode instruction = method.instructions.get(i);
-            if (instruction.getNext() != null && terminates(instruction.getType())) {
+            if (instruction.getNext() != null && terminates(instruction)) {
                 block = new BasicBlock(method);
                 block.setStart(i + 1);
                 block.setEnd(i + 1);
@@ -50,14 +47,16 @@ public class FlowAnalyzer extends Analyzer<BasicValue> {
             return;
         }
 
-        current.getChildren().add(current);
+        current.getChildren().add(successor);
     }
 
-    private boolean terminates(int type) {
-        return type == LABEL
-                || type == JUMP_INSN
-                || type == TABLESWITCH_INSN
-                || type == LOOKUPSWITCH_INSN;
+    private boolean terminates(AbstractInsnNode instruction) {
+        return instruction instanceof LabelNode
+                || instruction instanceof JumpInsnNode
+                || instruction instanceof TableSwitchInsnNode
+                || instruction instanceof LookupSwitchInsnNode;
+        //   || instruction.getOpcode() == ATHROW
+        //  || (instruction.getOpcode() >= IRETURN && instruction.getOpcode() <= RETURN);
     }
 
     public List<BasicBlock> getBlocks() {

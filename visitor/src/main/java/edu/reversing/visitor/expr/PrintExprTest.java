@@ -19,8 +19,8 @@ public class PrintExprTest extends Visitor {
         System.out.println("Tree: " + cls.name + "." + method.name + method.desc);
         for (Expr expr : method.getExprTree(true)) {
             if (expr.getOpcode() == ASTORE) {
-                System.out.println(expr);
-                System.out.println();
+             //   System.out.println(expr);
+               // System.out.println();
             }
         }
     }

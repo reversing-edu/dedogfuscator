@@ -26,8 +26,6 @@ public class FlowVisitor extends Visitor {
             return;
         }
 
-        removeRedundantGotos(method);
-
         FlowAnalyzer analyzer = new FlowAnalyzer();
         try {
             analyzer.analyze(cls.name, method);
@@ -37,6 +35,8 @@ public class FlowVisitor extends Visitor {
 
         dfs(method, analyzer);
         generated += analyzer.getBlocks().size();
+
+        removeRedundantGotos(method);
 
         //TODO dfs works to sort blocks but it leaves asm InsnList broken and with null insns
         //this could require reproducing labels or using AbstractInsnNode#clone instead of adding the insn directly (line 64)
@@ -48,8 +48,20 @@ public class FlowVisitor extends Visitor {
             return;
         }
 
+        Map<LabelNode, LabelNode> otf = new HashMap<>() {
+            @Override
+            public LabelNode get(Object key) {
+                LabelNode result = super.get(key);
+                if (result == null) {
+                    result = new LabelNode();
+                    super.put((LabelNode) key, result);
+                }
+                return result;
+            }
+        };
+
         InsnList instructions = new InsnList();
-        Queue<BasicBlock> stack = new LinkedList<>();
+        Queue<BasicBlock> stack = Collections.asLifoQueue(new LinkedList<>());
         stack.add(blocks.get(0));
         Set<BasicBlock> visited = new HashSet<>();
         while (!stack.isEmpty()) {
@@ -67,7 +79,7 @@ public class FlowVisitor extends Visitor {
 
                 for (int i = current.getStart(); i < current.getEnd(); i++) {
                     AbstractInsnNode instruction = method.instructions.get(i);
-                    instructions.add(instruction);
+                    instructions.add(instruction.clone(otf));
                 }
             }
         }

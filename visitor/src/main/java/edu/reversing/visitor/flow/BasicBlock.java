@@ -1,8 +1,8 @@
 package edu.reversing.visitor.flow;
 
+import edu.reversing.asm.commons.Printing;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.util.Printer;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -67,7 +67,7 @@ public class BasicBlock {
     }
 
     public boolean contains(int index) {
-        return index >= start && index <= end;
+        return index >= start && index < end;
     }
 
     public BasicBlock getRoot() {
@@ -89,12 +89,8 @@ public class BasicBlock {
         StringBuilder builder = new StringBuilder("Block {");
         builder.append("\n");
         for (AbstractInsnNode instruction : getInstructions()) {
-            if (instruction.getOpcode() == -1) {
-                continue;
-            }
-
             builder.append("\t");
-            builder.append(Printer.OPCODES[instruction.getOpcode()]);
+            builder.append(Printing.toString(instruction));
             builder.append("\n");
         }
         builder.append("}");
