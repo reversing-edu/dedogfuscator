@@ -1,13 +1,9 @@
 package edu.reversing;
 
 import com.google.inject.*;
-import edu.reversing.asm.Library;
+import edu.reversing.asm.tree.data.Library;
 import edu.reversing.configuration.Configuration;
 import edu.reversing.visitor.VisitorContext;
-import edu.reversing.visitor.expr.PrintExprTest;
-import edu.reversing.visitor.flow.FlowVisitor;
-import edu.reversing.visitor.redundancy.AccessVisitor;
-import edu.reversing.visitor.redundancy.TryCatchVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -23,12 +19,7 @@ public class Dedogfuscator {
         library.load(configuration.getInput(), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
         VisitorContext context = injector.getInstance(VisitorContext.class);
-
-        //i dont like this
-        context.addFirst(injector.getInstance(FlowVisitor.class));
-        context.addFirst(injector.getInstance(PrintExprTest.class));
-        context.addFirst(injector.getInstance(TryCatchVisitor.class));
-        context.addFirst(injector.getInstance(AccessVisitor.class));
+        context.inject(injector);         //i dont like this
         context.transform();
 
         library.write(configuration.getOutput(), ClassWriter.COMPUTE_MAXS);

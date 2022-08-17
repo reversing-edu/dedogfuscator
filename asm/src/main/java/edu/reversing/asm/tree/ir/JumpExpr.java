@@ -1,6 +1,7 @@
 package edu.reversing.asm.tree.ir;
 
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 
 public class JumpExpr extends Expr {
 

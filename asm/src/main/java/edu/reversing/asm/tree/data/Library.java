@@ -1,6 +1,6 @@
-package edu.reversing.asm;
+package edu.reversing.asm.tree.data;
 
-import edu.reversing.asm.tree.ClassNode;
+import edu.reversing.asm.tree.element.ClassNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 

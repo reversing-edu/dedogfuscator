@@ -1,8 +1,13 @@
 package edu.reversing.visitor;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.Hierarchy;
-import edu.reversing.asm.Library;
+import com.google.inject.Injector;
+import edu.reversing.asm.tree.data.Hierarchy;
+import edu.reversing.asm.tree.data.Library;
+import edu.reversing.visitor.expr.PrintExprTest;
+import edu.reversing.visitor.flow.FlowVisitor;
+import edu.reversing.visitor.redundancy.AccessVisitor;
+import edu.reversing.visitor.redundancy.TryCatchVisitor;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -38,5 +43,12 @@ public class VisitorContext {
             Visitor visitor = visitors.pop();
             visitor.transform();
         }
+    }
+
+    public void inject(Injector injector) {
+        addFirst(injector.getInstance(PrintExprTest.class));
+        addFirst(injector.getInstance(FlowVisitor.class));
+        addFirst(injector.getInstance(TryCatchVisitor.class));
+        addFirst(injector.getInstance(AccessVisitor.class));
     }
 }

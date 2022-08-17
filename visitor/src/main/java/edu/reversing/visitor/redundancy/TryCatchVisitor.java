@@ -1,9 +1,10 @@
 package edu.reversing.visitor.redundancy;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.element.ClassNode;
+import edu.reversing.asm.tree.element.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
-import edu.reversing.asm.tree.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.TryCatchBlockNode;
 

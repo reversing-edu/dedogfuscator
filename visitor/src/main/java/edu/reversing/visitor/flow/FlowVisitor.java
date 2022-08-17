@@ -1,8 +1,8 @@
 package edu.reversing.visitor.flow;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.ClassNode;
-import edu.reversing.asm.tree.MethodNode;
+import edu.reversing.asm.tree.element.ClassNode;
+import edu.reversing.asm.tree.element.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;
@@ -37,9 +37,6 @@ public class FlowVisitor extends Visitor {
         generated += analyzer.getBlocks().size();
 
         removeRedundantGotos(method);
-
-        //TODO dfs works to sort blocks but it leaves asm InsnList broken and with null insns
-        //this could require reproducing labels or using AbstractInsnNode#clone instead of adding the insn directly (line 64)
     }
 
     public void dfs(MethodNode method, FlowAnalyzer analyzer) {
@@ -61,7 +58,7 @@ public class FlowVisitor extends Visitor {
         };
 
         InsnList instructions = new InsnList();
-        Queue<BasicBlock> stack = Collections.asLifoQueue(new LinkedList<>());
+        Deque<BasicBlock> stack = new LinkedList<>();
         stack.add(blocks.get(0));
         Set<BasicBlock> visited = new HashSet<>();
         while (!stack.isEmpty()) {
@@ -70,11 +67,11 @@ public class FlowVisitor extends Visitor {
                 visited.add(current);
 
                 for (BasicBlock child : current.getChildren()) {
-                    stack.add(child.getRoot());
+                    stack.addFirst(child.getRoot());
                 }
 
                 if (current.getSuccessor() != null) {
-                    stack.add(current.getSuccessor());
+                    stack.addFirst(current.getSuccessor());
                 }
 
                 for (int i = current.getStart(); i < current.getEnd(); i++) {
@@ -108,6 +105,6 @@ public class FlowVisitor extends Visitor {
 
     @Override
     public void postVisit() {
-        System.out.println("Generated " + generated + " basic blocks and removed " + gotos + " gotos");
+        System.out.println("Generated " + generated + " basic blocks and inlined " + gotos + " gotos");
     }
 }

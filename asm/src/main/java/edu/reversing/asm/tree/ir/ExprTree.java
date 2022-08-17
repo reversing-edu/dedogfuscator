@@ -1,12 +1,11 @@
 package edu.reversing.asm.tree.ir;
 
-import edu.reversing.asm.commons.Printing;
-import edu.reversing.asm.tree.MethodNode;
-import org.objectweb.asm.Opcodes;
+import edu.reversing.asm.tree.element.MethodNode;
+import edu.reversing.asm.tree.ir.stmt.*;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
-import java.util.*;
+import java.util.Arrays;
 
 import static org.objectweb.asm.tree.AbstractInsnNode.*;
 
@@ -59,13 +58,11 @@ public class ExprTree extends Expr {
         return Arrays.copyOf(collapsed, collapsed.length - offset);
     }
 
-    //TODO add other expr types
     public void build(boolean forceNew) {
         if (exprs != null && !forceNew) {
             return;
         }
 
-        List<JumpExpr> jumps = new ArrayList<>();
         AbstractInsnNode[] instructions = method.instructions.toArray();
         exprs = new Expr[instructions.length];
 
@@ -84,13 +81,13 @@ public class ExprTree extends Expr {
                 case FIELD_INSN -> {
                     char d = ((FieldInsnNode) instruction).desc.charAt(0);
                     switch (opcode) {
-                        case Opcodes.GETSTATIC -> produce = d == 'D' || d == 'J' ? 2 : 1;
-                        case Opcodes.GETFIELD -> {
+                        case GETSTATIC -> produce = d == 'D' || d == 'J' ? 2 : 1;
+                        case GETFIELD -> {
                             consume = 1;
                             produce = d == 'D' || d == 'J' ? 2 : 1;
                         }
-                        case Opcodes.PUTSTATIC -> consume = d == 'D' || d == 'J' ? 2 : 1;
-                        case Opcodes.PUTFIELD -> consume = d == 'D' || d == 'J' ? 3 : 2;
+                        case PUTSTATIC -> consume = d == 'D' || d == 'J' ? 2 : 1;
+                        case PUTFIELD -> consume = d == 'D' || d == 'J' ? 3 : 2;
                     }
                 }
 
@@ -121,34 +118,7 @@ public class ExprTree extends Expr {
                 default -> throw new RuntimeException();
             }
 
-            Expr expr;
-            if (instruction instanceof LdcInsnNode) {
-                expr = new Expr(this, instruction, consume, produce);
-            } else if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
-                expr = new Expr(this, instruction, consume, produce);
-            } else if (opcode >= IRETURN && opcode <= RETURN) {
-                expr = new ReturnExpr(this, instruction, consume, produce);
-            } else if (opcode >= ILOAD && opcode <= ALOAD) {
-                expr = new VarExpr(this, instruction, consume, produce);
-            } else if (opcode >= ISTORE && opcode <= ASTORE) {
-                expr = new StoreExpr(this, instruction, consume, produce);
-            } else if (instruction instanceof IincInsnNode) {
-                expr = new IncrementExpr(this, instruction, consume, produce);
-            } else if (instruction instanceof JumpInsnNode) {
-                JumpExpr jn = new JumpExpr(this, instruction, consume, produce);
-                jumps.add(jn);
-                expr = jn;
-            } else if (instruction instanceof LabelNode) {
-                expr = new TargetExpr(this, instruction, consume, produce);
-            } else if (instruction instanceof FieldInsnNode) {
-                expr = new FieldExpr(this, instruction, consume, produce);
-            } else if (instruction instanceof MethodInsnNode) {
-                expr = new Expr(this, instruction, consume, produce);
-            } else {
-                expr = new Expr(this, instruction, consume, produce);
-            }
-
-            exprs[i] = expr;
+            exprs[i] = getExpr(instruction, opcode, consume, produce);
         }
 
         ptr = instructions.length - 1;
@@ -173,6 +143,67 @@ public class ExprTree extends Expr {
         }
     }
 
+    private Expr getExpr(AbstractInsnNode instruction, int opcode, int consume, int produce) {
+        //TODO ew
+        //missing cast insns, field insns and method calls
+        if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
+            return new Expr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IRETURN && opcode <= RETURN) {
+            return new ReturnExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IALOAD && opcode <= SALOAD) {
+            return new ArrayLoadExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IASTORE && opcode <= SASTORE) {
+            return new ArrayStoreExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= ILOAD && opcode <= ALOAD) {
+            return new VarExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= ISTORE && opcode <= ASTORE) {
+            return new StoreExpr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof LdcInsnNode ldc) {
+            if (ldc.cst instanceof Number) {
+                return new NumberExpr(this, instruction, consume, produce);
+            }
+            return new Expr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof IincInsnNode) {
+            return new IncrementExpr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof JumpInsnNode) {
+            return new JumpExpr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof LabelNode) {
+            return new TargetExpr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof FieldInsnNode) {
+            return new FieldExpr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof MethodInsnNode) {
+            return new Expr(this, instruction, consume, produce);
+        }
+
+        if (instruction instanceof IntInsnNode) {
+            return new NumberExpr(this, instruction, consume, produce);
+        }
+
+        return new Expr(this, instruction, consume, produce);
+    }
+
     private Expr seek() {
         if (ptr < 0) {
             return null;
@@ -185,27 +216,26 @@ public class ExprTree extends Expr {
 
         int consume = expr.consume;
         while (consume != 0) {
-            Expr next = seek();
-            if (next == null) {
+            Expr child = seek();
+            if (child == null) {
                 break;
             }
 
-            int opcode = next.getOpcode();
-            if (opcode == MONITOREXIT && expr.getOpcode() == ATHROW) {
-                next.produce = 1;
+            if (child.getOpcode() == MONITOREXIT && expr.getOpcode() == ATHROW) {
+                child.produce = 1;
             }
 
-            expr.addFirst(next);
+            expr.addFirst(child);
 
-            int delta = consume - next.produce;
+            int delta = consume - child.produce;
             if (delta < 0) {
                 expr.produce -= delta;
-                next.produce = 0;
+                child.produce = 0;
                 break;
             }
 
-            consume -= next.produce;
-            next.produce = 0;
+            consume -= child.produce;
+            child.produce = 0;
         }
 
         return expr;
