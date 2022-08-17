@@ -21,6 +21,7 @@ public class AccessVisitor extends Visitor {
 
     @Override
     public void preVisitMethod(ClassNode cls, MethodNode method) {
+        //TODO reduce abstracted access to the lowest level required where appropriate?
         method.access = transform(method.access, true);
     }
 

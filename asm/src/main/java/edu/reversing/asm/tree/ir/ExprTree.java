@@ -1,5 +1,6 @@
 package edu.reversing.asm.tree.ir;
 
+import edu.reversing.asm.commons.Instructions;
 import edu.reversing.asm.tree.element.MethodNode;
 import edu.reversing.asm.tree.ir.stmt.*;
 import org.objectweb.asm.Type;
@@ -38,14 +39,6 @@ public class ExprTree extends Expr {
     public ExprTree(MethodNode method) {
         super(null, null, -1, -1);
         this.method = method;
-    }
-
-    //TODO this should be in some util class
-    private static AbstractInsnNode getNextVirtual(AbstractInsnNode instruction) {
-        while (instruction != null && instruction.getOpcode() == -1) {
-            instruction = instruction.getNext();
-        }
-        return instruction;
     }
 
     public MethodNode getMethod() {
@@ -124,9 +117,9 @@ public class ExprTree extends Expr {
         ptr = instructions.length - 1;
 
         for (TryCatchBlockNode tcb : method.tryCatchBlocks) {
-            AbstractInsnNode start = getNextVirtual(tcb.start);
-            AbstractInsnNode end = getNextVirtual(tcb.end);
-            AbstractInsnNode handler = getNextVirtual(tcb.handler);
+            AbstractInsnNode start = Instructions.seekVirtual(tcb.start, true);
+            AbstractInsnNode end = Instructions.seekVirtual(tcb.end, true);
+            AbstractInsnNode handler = Instructions.seekVirtual(tcb.handler, true);
             for (Expr expr : exprs) {
                 AbstractInsnNode instruction = expr.getInstruction();
                 expr.tryCatchMeta = new TryCatchMeta(instruction == start, instruction == end, instruction == handler);

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import edu.reversing.asm.tree.data.Hierarchy;
 import edu.reversing.asm.tree.data.Library;
+import edu.reversing.visitor.convention.OverrideVisitor;
 import edu.reversing.visitor.expr.PrintExprTest;
 import edu.reversing.visitor.flow.FlowVisitor;
 import edu.reversing.visitor.redundancy.AccessVisitor;
@@ -49,6 +50,7 @@ public class VisitorContext {
         addFirst(injector.getInstance(PrintExprTest.class));
         addFirst(injector.getInstance(FlowVisitor.class));
         addFirst(injector.getInstance(TryCatchVisitor.class));
+        addFirst(injector.getInstance(OverrideVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
     }
 }
