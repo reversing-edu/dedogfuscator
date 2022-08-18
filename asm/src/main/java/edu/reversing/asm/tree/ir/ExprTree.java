@@ -3,6 +3,7 @@ package edu.reversing.asm.tree.ir;
 import edu.reversing.asm.commons.Instructions;
 import edu.reversing.asm.tree.element.MethodNode;
 import edu.reversing.asm.tree.ir.stmt.*;
+import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
@@ -51,11 +52,7 @@ public class ExprTree extends Expr {
         return Arrays.copyOf(collapsed, collapsed.length - offset);
     }
 
-    public void build(boolean forceNew) {
-        if (exprs != null && !forceNew) {
-            return;
-        }
-
+    public void build() {
         AbstractInsnNode[] instructions = method.instructions.toArray();
         exprs = new Expr[instructions.length];
 
@@ -117,9 +114,9 @@ public class ExprTree extends Expr {
         ptr = instructions.length - 1;
 
         for (TryCatchBlockNode tcb : method.tryCatchBlocks) {
-            AbstractInsnNode start = Instructions.seekVirtual(tcb.start, true);
-            AbstractInsnNode end = Instructions.seekVirtual(tcb.end, true);
-            AbstractInsnNode handler = Instructions.seekVirtual(tcb.handler, true);
+            AbstractInsnNode start = Instructions.seek(tcb.start, true);
+            AbstractInsnNode end = Instructions.seek(tcb.end, true);
+            AbstractInsnNode handler = Instructions.seek(tcb.handler, true);
             for (Expr expr : exprs) {
                 AbstractInsnNode instruction = expr.getInstruction();
                 expr.tryCatchMeta = new TryCatchMeta(instruction == start, instruction == end, instruction == handler);
@@ -161,6 +158,10 @@ public class ExprTree extends Expr {
 
         if (opcode >= ISTORE && opcode <= ASTORE) {
             return new StoreExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IADD && opcode <= LXOR) {
+            return new ArithmeticExpr(this, instruction, consume, produce);
         }
 
         if (instruction instanceof LdcInsnNode ldc) {
@@ -232,6 +233,19 @@ public class ExprTree extends Expr {
         }
 
         return expr;
+    }
+
+    public void accept(ExprVisitor v) {
+        for (Expr expr : this) {
+            accept(v, expr);
+        }
+    }
+
+    private void accept(ExprVisitor v, Expr expr) {
+        expr.accept(v);
+        for (Expr node : expr) {
+            accept(v, node);
+        }
     }
 
     public String toString() {

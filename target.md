@@ -13,7 +13,9 @@
 - dead/unreachable code
 - Exploits for moving members to their original classes, maybe ordering too.
   See https://github.com/alexanderhenne/osrs-exploits/blob/master/src/main/java/com/uniquepassive/osrsexploits/GamepackMethodOriginalClassFinder.java
-- Strahler number (I think copy propagation is a more specific term for the obfuscation)
+- Strahler number (obber reuses local vars over and over)
+- copy propagation
+- Invert if statements 
 - Remove unused local vars
 - convert ints to character literals where appropriate
 - Remove empty classes? After moving methods to their original classes and moving fields there

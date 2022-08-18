@@ -5,10 +5,9 @@ import com.google.inject.Injector;
 import edu.reversing.asm.tree.data.Hierarchy;
 import edu.reversing.asm.tree.data.Library;
 import edu.reversing.visitor.convention.OverrideVisitor;
-import edu.reversing.visitor.expr.PrintExprTest;
-import edu.reversing.visitor.flow.FlowVisitor;
-import edu.reversing.visitor.redundancy.AccessVisitor;
-import edu.reversing.visitor.redundancy.TryCatchVisitor;
+import edu.reversing.visitor.expr.ExprOrderVisitor;
+import edu.reversing.visitor.flow.ControlFlowDFSVisitor;
+import edu.reversing.visitor.redundancy.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -47,8 +46,9 @@ public class VisitorContext {
     }
 
     public void inject(Injector injector) {
-        addFirst(injector.getInstance(PrintExprTest.class));
-        addFirst(injector.getInstance(FlowVisitor.class));
+        addFirst(injector.getInstance(ExprOrderVisitor.class));
+        addFirst(injector.getInstance(RedundantGotoVisitor.class));
+        addFirst(injector.getInstance(ControlFlowDFSVisitor.class));
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(OverrideVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));

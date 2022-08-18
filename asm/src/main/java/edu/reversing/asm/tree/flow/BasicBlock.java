@@ -1,4 +1,4 @@
-package edu.reversing.visitor.flow;
+package edu.reversing.asm.tree.flow;
 
 import edu.reversing.asm.commons.Printing;
 import org.objectweb.asm.tree.AbstractInsnNode;

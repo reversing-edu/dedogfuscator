@@ -3,20 +3,19 @@ package edu.reversing.visitor.flow;
 import com.google.inject.Inject;
 import edu.reversing.asm.tree.element.ClassNode;
 import edu.reversing.asm.tree.element.MethodNode;
+import edu.reversing.asm.tree.flow.BasicBlock;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
 
 import java.util.*;
 
-public class FlowVisitor extends Visitor {
+public class ControlFlowDFSVisitor extends Visitor {
 
     private int generated = 0;
-    private int gotos = 0;
 
     @Inject
-    public FlowVisitor(VisitorContext context) {
+    public ControlFlowDFSVisitor(VisitorContext context) {
         super(context);
     }
 
@@ -26,21 +25,12 @@ public class FlowVisitor extends Visitor {
             return;
         }
 
-        FlowAnalyzer analyzer = new FlowAnalyzer();
-        try {
-            analyzer.analyze(cls.name, method);
-        } catch (AnalyzerException e) {
-            e.printStackTrace();
-        }
-
-        dfs(method, analyzer);
-        generated += analyzer.getBlocks().size();
-
-        removeRedundantGotos(method);
+        List<BasicBlock> blocks = method.getBasicBlocks(true);
+        dfs(method, blocks);
+        generated += blocks.size();
     }
 
-    public void dfs(MethodNode method, FlowAnalyzer analyzer) {
-        List<BasicBlock> blocks = analyzer.getBlocks();
+    private void dfs(MethodNode method, List<BasicBlock> blocks) {
         if (blocks.isEmpty()) {
             return;
         }
@@ -84,27 +74,8 @@ public class FlowVisitor extends Visitor {
         method.instructions = instructions;
     }
 
-    private void removeRedundantGotos(MethodNode method) {
-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction.getOpcode() != GOTO) {
-                continue;
-            }
-
-            JumpInsnNode jump = (JumpInsnNode) instruction;
-            AbstractInsnNode next = jump.getNext();
-            if (next == null || next.getType() != AbstractInsnNode.LABEL) {
-                continue;
-            }
-
-            if (jump.label == next) {
-                method.instructions.remove(instruction);
-                gotos++;
-            }
-        }
-    }
-
     @Override
     public void postVisit() {
-        System.out.println("Generated " + generated + " basic blocks and inlined " + gotos + " gotos");
+        System.out.println("Built CFGs with " + generated + " basic blocks and performed DFS on methods");
     }
 }

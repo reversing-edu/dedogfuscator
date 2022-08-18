@@ -1,6 +1,8 @@
 package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.commons.Printing;
+import edu.reversing.asm.tree.ir.stmt.*;
+import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.commons.Tree;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -95,6 +97,32 @@ public class Expr extends Tree<Expr> implements Opcodes {
 
     //TODO set(expr)
     //TODO visitor
+
+    public void accept(ExprVisitor v) {
+        v.visitAny(this);
+
+        if (this instanceof ArithmeticExpr) {
+            v.visitOperation((ArithmeticExpr) this);
+        } else if (this instanceof ArrayLoadExpr) {
+            v.visitArrayLoad((ArrayLoadExpr) this);
+        } else if (this instanceof ArrayStoreExpr) {
+            v.visitArrayStore((ArrayStoreExpr) this);
+        } else if (this instanceof FieldExpr) {
+            v.visitField((FieldExpr) this);
+        } else if (this instanceof IncrementExpr) {
+            v.visitIncrement((IncrementExpr) this);
+        } else if (this instanceof JumpExpr) {
+            v.visitJump((JumpExpr) this);
+        } else if (this instanceof NumberExpr) {
+            v.visitNumber((NumberExpr) this);
+        } else if (this instanceof ReturnExpr) {
+            v.visitReturn((ReturnExpr) this);
+        } else if (this instanceof StoreExpr) {
+            v.visitStore((StoreExpr) this);
+        } else if (this instanceof VarExpr) {
+            v.visitVar((VarExpr) this);
+        }
+    }
 
     public String toString() {
         return toString(1);

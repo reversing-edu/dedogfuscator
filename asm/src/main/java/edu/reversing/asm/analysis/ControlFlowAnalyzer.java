@@ -1,16 +1,17 @@
-package edu.reversing.visitor.flow;
+package edu.reversing.asm.analysis;
 
+import edu.reversing.asm.tree.flow.BasicBlock;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlowAnalyzer extends Analyzer<BasicValue> {
+public class ControlFlowAnalyzer extends Analyzer<BasicValue> {
 
     private final List<BasicBlock> blocks = new ArrayList<>();
 
-    public FlowAnalyzer() {
+    public ControlFlowAnalyzer() {
         super(new BasicInterpreter());
     }
 
