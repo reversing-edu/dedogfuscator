@@ -7,6 +7,8 @@ import edu.reversing.commons.Tree;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
+import java.util.*;
+
 public class Expr extends Tree<Expr> implements Opcodes {
 
     private final ExprTree tree;
@@ -98,6 +100,58 @@ public class Expr extends Tree<Expr> implements Opcodes {
     //TODO set(expr)
     //TODO visitor
 
+    //should we make some Query api and move layer/preLayer/getChildren out of Expr?
+    public List<Expr> getChildren(int opcode) {
+        List<Expr> children = new ArrayList<>();
+        for (Expr expr : this) {
+            if (expr.getOpcode() == opcode) {
+                children.add(expr);
+            }
+        }
+        return children;
+    }
+
+    public List<Expr> layerAll(int... opcodes) {
+        List<Expr> children = getChildren(opcodes[0]);
+        if (children.isEmpty() || opcodes.length == 1) {
+            return children;
+        }
+
+        for (int i = 1; i < opcodes.length; i++) {
+            List<Expr> next = new ArrayList<>();
+            for (Expr n : children) {
+                List<Expr> match = n.getChildren(opcodes[i]);
+                if (match != null) {
+                    next.addAll(match);
+                }
+            }
+
+            if (next.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            children.clear();
+            children.addAll(next);
+        }
+
+        return children;
+    }
+
+    public Expr layer(int... opcodes) {
+        List<Expr> nodes = layerAll(opcodes);
+        return !nodes.isEmpty() ? nodes.get(0) : null;
+    }
+
+    public Expr preLayer(int... opcodes) {
+        Expr node = this;
+        for (int opcode : opcodes) {
+            if ((node = node.getParent()) == null || node.getOpcode() != opcode) {
+                return null;
+            }
+        }
+        return node;
+    }
+
     public void accept(ExprVisitor v) {
         v.visitAny(this);
         if (this instanceof JumpExpr) {
@@ -129,6 +183,8 @@ public class Expr extends Tree<Expr> implements Opcodes {
             v.visitStore((StoreExpr) this);
         } else if (this instanceof VarExpr) {
             v.visitVar((VarExpr) this);
+        } else if (this instanceof InvokeExpr) {
+            v.visitInvoke((InvokeExpr) this);
         }
     }
 

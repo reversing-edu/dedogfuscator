@@ -99,4 +99,10 @@ public abstract class ExprVisitor implements Opcodes {
             delegate.visitField(field);
         }
     }
+
+    public void visitInvoke(InvokeExpr call) {
+        if (delegate != null) {
+            delegate.visitInvoke(call);
+        }
+    }
 }

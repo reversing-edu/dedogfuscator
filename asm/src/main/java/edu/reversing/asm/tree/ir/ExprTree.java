@@ -144,6 +144,10 @@ public class ExprTree extends Expr {
             return new ReturnExpr(this, instruction, consume, produce);
         }
 
+        if (opcode == ARRAYLENGTH) {
+            return new ArrayLengthExpr(this, instruction, consume, produce);
+        }
+
         if (opcode >= IALOAD && opcode <= SALOAD) {
             return new ArrayLoadExpr(this, instruction, consume, produce);
         }
@@ -184,7 +188,7 @@ public class ExprTree extends Expr {
         }
 
         if (instruction instanceof MethodInsnNode) {
-            return new Expr(this, instruction, consume, produce);
+            return new InvokeExpr(this, instruction, consume, produce);
         }
 
         if (instruction instanceof IntInsnNode) {

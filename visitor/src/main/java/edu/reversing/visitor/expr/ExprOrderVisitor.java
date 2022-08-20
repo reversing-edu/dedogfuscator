@@ -1,11 +1,9 @@
 package edu.reversing.visitor.expr;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.commons.Printing;
 import edu.reversing.asm.tree.element.ClassNode;
 import edu.reversing.asm.tree.element.MethodNode;
-import edu.reversing.asm.tree.ir.ArithmeticExpr;
-import edu.reversing.asm.tree.ir.Expr;
+import edu.reversing.asm.tree.ir.*;
 import edu.reversing.asm.tree.ir.stmt.BinaryJumpExpr;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.visitor.Visitor;
@@ -24,14 +22,35 @@ public class ExprOrderVisitor extends Visitor {
                 .accept(new ExprVisitor() {
                     @Override
                     public void visitBinaryJump(BinaryJumpExpr stmt) {
-                        //process(stmt, stmt.getLeft(), stmt.getRight());
+                        process(stmt, stmt.getLeft(), stmt.getRight());
                     }
 
                     @Override
                     public void visitOperation(ArithmeticExpr operation) {
-                        System.out.println(Printing.toString(operation.getInstruction()));
-                        //TODO ArithmeticExpr should be split into Unary and Binary too? since INEG for example is unary
-                        //process(operation, operation.getLeft(), operation.getRight());
+                        process(operation, operation.getLeft(), operation.getRight());
+                    }
+
+                    @Override
+                    public void visitInvoke(InvokeExpr call) {
+
+                    }
+
+                    private void process(Expr parent, Expr lhs, Expr rhs) {
+                        System.out.println(parent);
+                        System.out.println();
+
+                        //null = any, ? = unsure
+                        Class[][] orders = {
+                                {null, ArrayLengthExpr.class},
+                                {null, NumberExpr.class}, //?
+                                {VarExpr.class, FieldExpr.class}, //?
+                                {ArrayLoadExpr.class, null}, //?
+                                {InvokeExpr.class, null} //?
+                        };
+     /*
+                        List of operators that are safe to reorder:
+                        MUL, ADD, IF, more?
+                         */
                     }
                 });
     }

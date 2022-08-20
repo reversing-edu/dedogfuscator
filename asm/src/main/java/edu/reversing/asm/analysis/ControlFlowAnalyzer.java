@@ -59,9 +59,9 @@ public class ControlFlowAnalyzer extends Analyzer<BasicValue> {
         return instruction instanceof LabelNode
                 || instruction instanceof JumpInsnNode
                 || instruction instanceof TableSwitchInsnNode
-                || instruction instanceof LookupSwitchInsnNode;
-        //   || instruction.getOpcode() == ATHROW
-        //  || (instruction.getOpcode() >= IRETURN && instruction.getOpcode() <= RETURN);
+                || instruction instanceof LookupSwitchInsnNode
+                || instruction.getOpcode() == ATHROW
+                || (instruction.getOpcode() >= IRETURN && instruction.getOpcode() <= RETURN);
     }
 
     public List<BasicBlock> getBlocks() {

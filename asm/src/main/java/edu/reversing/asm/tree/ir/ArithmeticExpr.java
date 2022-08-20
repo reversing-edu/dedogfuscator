@@ -13,6 +13,18 @@ public class ArithmeticExpr extends Expr {
     }
 
     public Expr getRight() {
+        if (isUnary()) {
+            return null;
+        }
         return get(1);
+    }
+
+    //TODO should split this into UnaryArtihmetic?
+    public boolean isUnary() {
+        int opcode = getOpcode();
+        return opcode == INEG
+                || opcode == LNEG
+                || opcode == DNEG
+                || opcode == FNEG;
     }
 }
