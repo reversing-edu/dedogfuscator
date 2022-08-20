@@ -1,10 +1,10 @@
 package edu.reversing.visitor.expr;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.structure.ClassNode;
-import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.asm.tree.ir.*;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
+import edu.reversing.asm.tree.structure.ClassNode;
+import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -76,9 +76,9 @@ public class ExprOrderVisitor extends Visitor {
             return true;
         }
 
-        //2 vars, order by expr size
-        if (lhs instanceof VarExpr && rhs instanceof VarExpr) {
-            return lhs.getCumulativeSize() > rhs.getCumulativeSize();
+        //2 vars, order by var index
+        if (lhs instanceof VarExpr v1 && rhs instanceof VarExpr v2) {
+            return v1.getIndex() > v2.getIndex();
         }
 
         //Constant numbers should always be on right
@@ -91,8 +91,8 @@ public class ExprOrderVisitor extends Visitor {
             return true;
         }
 
-        if (lhs instanceof FieldExpr f1 && rhs instanceof FieldExpr f2) {
-            return swapField(f1, f2);
+        if (lhs instanceof FieldExpr && rhs instanceof FieldExpr) {
+            return swapField((FieldExpr) lhs, (FieldExpr) rhs);
         }
 
         //null on right side of comparison
