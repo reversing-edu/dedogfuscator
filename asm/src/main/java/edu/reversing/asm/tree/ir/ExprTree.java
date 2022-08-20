@@ -175,10 +175,6 @@ public class ExprTree extends Expr {
             return new IncrementExpr(this, instruction, consume, produce);
         }
 
-        if (instruction instanceof JumpInsnNode) {
-            return new JumpExpr(this, instruction, consume, produce);
-        }
-
         if (instruction instanceof LabelNode) {
             return new TargetExpr(this, instruction, consume, produce);
         }
@@ -193,6 +189,23 @@ public class ExprTree extends Expr {
 
         if (instruction instanceof IntInsnNode) {
             return new NumberExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IFEQ && opcode <= IFLE) {
+            return new UnaryJumpExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode >= IF_ICMPEQ && opcode <= IF_ACMPNE) {
+            return new BinaryJumpExpr(this, instruction, consume, produce);
+        }
+
+        if (opcode == GOTO) {
+            return new GotoExpr(this, instruction, consume, produce);
+        }
+
+        //remaining ones are jsr ret etc
+        if (instruction instanceof JumpInsnNode) {
+            return new JumpExpr(this, instruction, consume, produce);
         }
 
         return new Expr(this, instruction, consume, produce);

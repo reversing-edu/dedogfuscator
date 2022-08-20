@@ -24,12 +24,16 @@ public class ControlFlowAnalyzer extends Analyzer<BasicValue> {
             block.setEnd(block.getEnd() + 1);
             AbstractInsnNode instruction = method.instructions.get(i);
             if (instruction.getNext() != null && terminates(instruction)) {
-                block = new BasicBlock(method);
-                block.setStart(i + 1);
-                block.setEnd(i + 1);
-                blocks.add(block);
+                blocks.add(block = newBasicBlock(method, i + 1));
             }
         }
+    }
+
+    private BasicBlock newBasicBlock(MethodNode method, int index) {
+        BasicBlock block = new BasicBlock(method);
+        block.setStart(index);
+        block.setEnd(index);
+        return block;
     }
 
     @Override

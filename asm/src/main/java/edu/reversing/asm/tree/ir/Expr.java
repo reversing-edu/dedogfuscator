@@ -100,8 +100,18 @@ public class Expr extends Tree<Expr> implements Opcodes {
 
     public void accept(ExprVisitor v) {
         v.visitAny(this);
-
-        if (this instanceof ArithmeticExpr) {
+        if (this instanceof JumpExpr) {
+            //TODO should this run for all jumps or only for insns besides binary unary and goto (ret jsr etc)
+            //or maybe we make JumpExpr abstract and have another impl for jsr/ret
+            v.visitJump((JumpExpr) this);
+            if (this instanceof BinaryJumpExpr) {
+                v.visitBinaryJump((BinaryJumpExpr) this);
+            } else if (this instanceof UnaryJumpExpr) {
+                v.visitUnaryJump((UnaryJumpExpr) this);
+            } else if (this instanceof GotoExpr) {
+                v.visitGoto((GotoExpr) this);
+            }
+        } else if (this instanceof ArithmeticExpr) {
             v.visitOperation((ArithmeticExpr) this);
         } else if (this instanceof ArrayLoadExpr) {
             v.visitArrayLoad((ArrayLoadExpr) this);
@@ -111,8 +121,6 @@ public class Expr extends Tree<Expr> implements Opcodes {
             v.visitField((FieldExpr) this);
         } else if (this instanceof IncrementExpr) {
             v.visitIncrement((IncrementExpr) this);
-        } else if (this instanceof JumpExpr) {
-            v.visitJump((JumpExpr) this);
         } else if (this instanceof NumberExpr) {
             v.visitNumber((NumberExpr) this);
         } else if (this instanceof ReturnExpr) {

@@ -34,6 +34,24 @@ public abstract class ExprVisitor implements Opcodes {
         }
     }
 
+    public void visitBinaryJump(BinaryJumpExpr jump) {
+        if (delegate != null) {
+            delegate.visitBinaryJump(jump);
+        }
+    }
+
+    public void visitUnaryJump(UnaryJumpExpr jump) {
+        if (delegate != null) {
+            delegate.visitUnaryJump(jump);
+        }
+    }
+
+    public void visitGoto(GotoExpr jump) {
+        if (delegate != null) {
+            delegate.visitGoto(jump);
+        }
+    }
+
     public void visitNumber(NumberExpr number) {
         if (delegate != null) {
             delegate.visitNumber(number);
