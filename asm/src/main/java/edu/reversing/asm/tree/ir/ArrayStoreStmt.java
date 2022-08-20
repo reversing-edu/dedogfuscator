@@ -1,12 +1,12 @@
-package edu.reversing.asm.tree.ir.stmt;
+package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.tree.ir.Expr;
 import edu.reversing.asm.tree.ir.ExprTree;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
-public class ArrayStoreExpr extends Expr {
+public class ArrayStoreStmt extends Expr {
 
-    public ArrayStoreExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    public ArrayStoreStmt(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
         super(tree, instruction, consume, produce);
     }
 

@@ -2,7 +2,6 @@ package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.commons.Instructions;
 import edu.reversing.asm.tree.element.MethodNode;
-import edu.reversing.asm.tree.ir.stmt.*;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -46,8 +45,8 @@ public class ExprTree extends Expr {
         return method;
     }
 
-    public AbstractInsnNode[] getDeepChildren() {
-        AbstractInsnNode[] collapsed = super.getDeepChildren();
+    public AbstractInsnNode[] collapse() {
+        AbstractInsnNode[] collapsed = super.collapse();
         int offset = collapsed.length > 1 && collapsed[collapsed.length - 2].getType() == AbstractInsnNode.LABEL ? 2 : 1;
         return Arrays.copyOf(collapsed, collapsed.length - offset);
     }
@@ -135,13 +134,14 @@ public class ExprTree extends Expr {
 
     private Expr getExpr(AbstractInsnNode instruction, int opcode, int consume, int produce) {
         //TODO ew
-        //missing cast insns, field insns and method calls
+        //missing cast insns
+
         if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
-            return new Expr(this, instruction, consume, produce);
+            return new NumberExpr(this, instruction, consume, produce);
         }
 
         if (opcode >= IRETURN && opcode <= RETURN) {
-            return new ReturnExpr(this, instruction, consume, produce);
+            return new ReturnStmt(this, instruction, consume, produce);
         }
 
         if (opcode == ARRAYLENGTH) {
@@ -153,7 +153,7 @@ public class ExprTree extends Expr {
         }
 
         if (opcode >= IASTORE && opcode <= SASTORE) {
-            return new ArrayStoreExpr(this, instruction, consume, produce);
+            return new ArrayStoreStmt(this, instruction, consume, produce);
         }
 
         if (opcode >= ILOAD && opcode <= ALOAD) {
@@ -161,7 +161,7 @@ public class ExprTree extends Expr {
         }
 
         if (opcode >= ISTORE && opcode <= ASTORE) {
-            return new StoreExpr(this, instruction, consume, produce);
+            return new StoreStmt(this, instruction, consume, produce);
         }
 
         if (opcode >= IADD && opcode <= LXOR) {
@@ -196,11 +196,11 @@ public class ExprTree extends Expr {
         }
 
         if (opcode >= IFEQ && opcode <= IFLE) {
-            return new UnaryJumpExpr(this, instruction, consume, produce);
+            return new UnaryJumpStmt(this, instruction, consume, produce);
         }
 
         if (opcode >= IF_ICMPEQ && opcode <= IF_ACMPNE) {
-            return new BinaryJumpExpr(this, instruction, consume, produce);
+            return new BinaryJumpStmt(this, instruction, consume, produce);
         }
 
         if (opcode == GOTO) {

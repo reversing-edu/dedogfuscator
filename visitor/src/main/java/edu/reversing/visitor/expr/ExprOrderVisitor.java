@@ -4,12 +4,16 @@ import com.google.inject.Inject;
 import edu.reversing.asm.tree.element.ClassNode;
 import edu.reversing.asm.tree.element.MethodNode;
 import edu.reversing.asm.tree.ir.*;
-import edu.reversing.asm.tree.ir.stmt.BinaryJumpExpr;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnList;
 
 public class ExprOrderVisitor extends Visitor {
+
+    private int ordered = 0;
 
     @Inject
     public ExprOrderVisitor(VisitorContext context) {
@@ -18,40 +22,116 @@ public class ExprOrderVisitor extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        method.getExprTree(true)
-                .accept(new ExprVisitor() {
-                    @Override
-                    public void visitBinaryJump(BinaryJumpExpr stmt) {
-                        process(stmt, stmt.getLeft(), stmt.getRight());
-                    }
+        method.getExprTree(true).accept(new ExprVisitor() {
+            @Override
+            public void visitBinaryJump(BinaryJumpStmt stmt) {
+                process(stmt, stmt.getLeft(), stmt.getRight());
+            }
 
-                    @Override
-                    public void visitOperation(ArithmeticExpr operation) {
-                        process(operation, operation.getLeft(), operation.getRight());
-                    }
+            @Override
+            public void visitOperation(ArithmeticExpr operation) {
+                process(operation, operation.getLeft(), operation.getRight());
+            }
+        });
+    }
 
-                    @Override
-                    public void visitInvoke(InvokeExpr call) {
+    private void process(Expr parent, Expr lhs, Expr rhs) {
+        if (!isCommutative(parent) || !swap(lhs, rhs)) {
+            return;
+        }
 
-                    }
+        MethodNode method = parent.getRoot().getMethod();
+        AbstractInsnNode[] left = lhs.collapse();
+        AbstractInsnNode[] right = rhs.collapse();
 
-                    private void process(Expr parent, Expr lhs, Expr rhs) {
-                        System.out.println(parent);
-                        System.out.println();
+        InsnList insertion = new InsnList();
+        for (AbstractInsnNode instruction : right) {
+            method.instructions.remove(instruction);
+            insertion.add(instruction);
+        }
 
-                        //null = any, ? = unsure
-                        Class[][] orders = {
-                                {null, ArrayLengthExpr.class},
-                                {null, NumberExpr.class}, //?
-                                {VarExpr.class, FieldExpr.class}, //?
-                                {ArrayLoadExpr.class, null}, //?
-                                {InvokeExpr.class, null} //?
-                        };
-     /*
-                        List of operators that are safe to reorder:
-                        MUL, ADD, IF, more?
-                         */
-                    }
-                });
+        method.instructions.insertBefore(left[0], insertion);
+
+        //TODO keep track of ordered count by types e.g. orderedConstants, orderedVarToField, orderedByExprSize
+        ordered++;
+    }
+
+    private boolean isCommutative(Expr expr) {
+        int opcode = expr.getOpcode();
+        return (opcode >= IADD && opcode <= DADD)
+                || (opcode >= IMUL && opcode <= DMUL)
+                || opcode == IF_ACMPNE
+                || opcode == IF_ICMPNE
+                || opcode == IF_ACMPEQ
+                || opcode == IF_ICMPEQ;
+    }
+
+    private boolean swap(Expr lhs, Expr rhs) {
+        if (lhs instanceof ArrayLengthExpr) {
+            //comparing 2 arraylengths, order by expr size
+            if (rhs instanceof ArrayLengthExpr) {
+                return lhs.getCumulativeSize() > rhs.getCumulativeSize();
+            }
+
+            //Always want array.length on right hand side
+            return true;
+        }
+
+        //2 vars, order by expr size
+        if (lhs instanceof VarExpr && rhs instanceof VarExpr) {
+            return lhs.getCumulativeSize() > rhs.getCumulativeSize();
+        }
+
+        //Constant numbers should always be on right
+        if (lhs instanceof NumberExpr) {
+            return true;
+        }
+
+        //Field on left, Var on right
+        if (lhs instanceof VarExpr && rhs instanceof FieldExpr) {
+            return true;
+        }
+
+        if (lhs instanceof FieldExpr f1 && rhs instanceof FieldExpr f2) {
+            return swapField(f1, f2);
+        }
+
+        //null on right side of comparison
+        if (lhs.getOpcode() == ACONST_NULL) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean swapField(FieldExpr lhs, FieldExpr rhs) {
+        //Both fields are non static
+        if (!lhs.isStatic() && !rhs.isStatic()) {
+            //Caller contexts of the field (i.e if it was var.field then the context is the var)
+            Expr lctx = lhs.get(0);
+            Expr rctx = rhs.get(0);
+
+            //If field callers are both local variables, prefer lower var index on left side
+            if (lctx instanceof VarExpr v1 && rctx instanceof VarExpr v2) {
+                return v1.getIndex() > v2.getIndex();
+            }
+
+            if (rctx.getOpcode() == DUP) {
+                return true;
+            }
+        }
+
+        //Prefer static ref on left side when opposite operand is nonstatic
+        if (!lhs.isStatic() && rhs.isStatic()) {
+            return true;
+        }
+
+        //Last case: Sort by expression size? i.e var.field is preferred on left over var.field.field.field
+        return lhs.getCumulativeSize() > rhs.getCumulativeSize();
+    }
+
+    @Override
+    public void postVisit() {
+        System.out.println("Ordered " + ordered + " expressions");
     }
 }

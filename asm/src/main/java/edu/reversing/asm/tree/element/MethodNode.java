@@ -33,16 +33,6 @@ public class MethodNode extends org.objectweb.asm.tree.MethodNode {
         return tree;
     }
 
-    //TODO maybe some key cache/hashing
-    public String key() {
-        return owner + "." + name + desc;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof MethodNode other && other.key().equals(key());
-    }
-
     public List<BasicBlock> getBasicBlocks(boolean forceBuild) {
         if (forceBuild || blocks == null) {
             ControlFlowAnalyzer analyzer = new ControlFlowAnalyzer();
@@ -55,5 +45,15 @@ public class MethodNode extends org.objectweb.asm.tree.MethodNode {
             }
         }
         return blocks;
+    }
+
+    //TODO maybe some key cache/hashing
+    public String key() {
+        return owner + "." + name + desc;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof MethodNode other && other.key().equals(key());
     }
 }

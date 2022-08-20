@@ -3,7 +3,7 @@ package edu.reversing.asm.tree.ir;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 
-public class JumpExpr extends Expr {
+public sealed class JumpExpr extends Expr permits GotoExpr, BinaryJumpStmt, UnaryJumpStmt {
 
     private TargetExpr target;
 

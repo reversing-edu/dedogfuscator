@@ -1,7 +1,6 @@
 package edu.reversing.asm.tree.ir.visitor;
 
 import edu.reversing.asm.tree.ir.*;
-import edu.reversing.asm.tree.ir.stmt.*;
 import org.objectweb.asm.Opcodes;
 
 public abstract class ExprVisitor implements Opcodes {
@@ -34,13 +33,13 @@ public abstract class ExprVisitor implements Opcodes {
         }
     }
 
-    public void visitBinaryJump(BinaryJumpExpr stmt) {
+    public void visitBinaryJump(BinaryJumpStmt stmt) {
         if (delegate != null) {
             delegate.visitBinaryJump(stmt);
         }
     }
 
-    public void visitUnaryJump(UnaryJumpExpr stmt) {
+    public void visitUnaryJump(UnaryJumpStmt stmt) {
         if (delegate != null) {
             delegate.visitUnaryJump(stmt);
         }
@@ -76,19 +75,19 @@ public abstract class ExprVisitor implements Opcodes {
         }
     }
 
-    public void visitArrayStore(ArrayStoreExpr store) {
+    public void visitArrayStore(ArrayStoreStmt store) {
         if (delegate != null) {
             delegate.visitArrayStore(store);
         }
     }
 
-    public void visitStore(StoreExpr store) {
+    public void visitStore(StoreStmt store) {
         if (delegate != null) {
             delegate.visitStore(store);
         }
     }
 
-    public void visitReturn(ReturnExpr ret) {
+    public void visitReturn(ReturnStmt ret) {
         if (delegate != null) {
             delegate.visitReturn(ret);
         }

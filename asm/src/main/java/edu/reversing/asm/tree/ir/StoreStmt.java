@@ -1,11 +1,11 @@
-package edu.reversing.asm.tree.ir.stmt;
+package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.tree.ir.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
-public class StoreExpr extends LVTExpr {
+public final class StoreStmt extends LVTExpr {
 
-    public StoreExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    public StoreStmt(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
         super(tree, instruction, consume, produce);
     }
 

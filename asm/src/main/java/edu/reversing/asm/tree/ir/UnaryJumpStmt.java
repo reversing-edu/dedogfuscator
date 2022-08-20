@@ -1,11 +1,11 @@
-package edu.reversing.asm.tree.ir.stmt;
+package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.tree.ir.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
-public class UnaryJumpExpr extends JumpExpr {
+public final class UnaryJumpStmt extends JumpExpr {
 
-    public UnaryJumpExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    public UnaryJumpStmt(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
         super(tree, instruction, consume, produce);
     }
 

@@ -1,7 +1,6 @@
 package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.commons.Printing;
-import edu.reversing.asm.tree.ir.stmt.*;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.commons.Tree;
 import org.objectweb.asm.Opcodes;
@@ -52,12 +51,12 @@ public class Expr extends Tree<Expr> implements Opcodes {
         return exprs;
     }
 
-    public AbstractInsnNode[] getDeepChildren() {
+    public AbstractInsnNode[] collapse() {
         AbstractInsnNode[] instructions = new AbstractInsnNode[getCumulativeSize()];
 
         int i = 0;
         for (Expr child : this) {
-            AbstractInsnNode[] sub = child.getDeepChildren();
+            AbstractInsnNode[] sub = child.collapse();
             System.arraycopy(sub, 0, instructions, i, sub.length);
             i += sub.length;
         }
@@ -158,10 +157,10 @@ public class Expr extends Tree<Expr> implements Opcodes {
             //TODO should this run for all jumps or only for insns besides binary unary and goto (ret jsr etc)
             //or maybe we make JumpExpr abstract and have another impl for jsr/ret
             v.visitJump((JumpExpr) this);
-            if (this instanceof BinaryJumpExpr) {
-                v.visitBinaryJump((BinaryJumpExpr) this);
-            } else if (this instanceof UnaryJumpExpr) {
-                v.visitUnaryJump((UnaryJumpExpr) this);
+            if (this instanceof BinaryJumpStmt) {
+                v.visitBinaryJump((BinaryJumpStmt) this);
+            } else if (this instanceof UnaryJumpStmt) {
+                v.visitUnaryJump((UnaryJumpStmt) this);
             } else if (this instanceof GotoExpr) {
                 v.visitGoto((GotoExpr) this);
             }
@@ -169,18 +168,18 @@ public class Expr extends Tree<Expr> implements Opcodes {
             v.visitOperation((ArithmeticExpr) this);
         } else if (this instanceof ArrayLoadExpr) {
             v.visitArrayLoad((ArrayLoadExpr) this);
-        } else if (this instanceof ArrayStoreExpr) {
-            v.visitArrayStore((ArrayStoreExpr) this);
+        } else if (this instanceof ArrayStoreStmt) {
+            v.visitArrayStore((ArrayStoreStmt) this);
         } else if (this instanceof FieldExpr) {
             v.visitField((FieldExpr) this);
         } else if (this instanceof IncrementExpr) {
             v.visitIncrement((IncrementExpr) this);
         } else if (this instanceof NumberExpr) {
             v.visitNumber((NumberExpr) this);
-        } else if (this instanceof ReturnExpr) {
-            v.visitReturn((ReturnExpr) this);
-        } else if (this instanceof StoreExpr) {
-            v.visitStore((StoreExpr) this);
+        } else if (this instanceof ReturnStmt) {
+            v.visitReturn((ReturnStmt) this);
+        } else if (this instanceof StoreStmt) {
+            v.visitStore((StoreStmt) this);
         } else if (this instanceof VarExpr) {
             v.visitVar((VarExpr) this);
         } else if (this instanceof InvokeExpr) {
