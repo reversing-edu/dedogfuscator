@@ -1,7 +1,7 @@
-package edu.reversing.asm.tree.data;
+package edu.reversing.asm.tree.classpath;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.element.ClassNode;
+import edu.reversing.asm.tree.structure.ClassNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 

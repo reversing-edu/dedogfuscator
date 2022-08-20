@@ -1,7 +1,7 @@
 package edu.reversing;
 
 import com.google.inject.*;
-import edu.reversing.asm.tree.data.Library;
+import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.configuration.Configuration;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.ClassReader;

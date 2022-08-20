@@ -2,8 +2,8 @@ package edu.reversing.visitor;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import edu.reversing.asm.tree.data.Hierarchy;
-import edu.reversing.asm.tree.data.Library;
+import edu.reversing.asm.tree.classpath.Hierarchy;
+import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.visitor.convention.OverrideVisitor;
 import edu.reversing.visitor.expr.ExprOrderVisitor;
 import edu.reversing.visitor.flow.ControlFlowDFSVisitor;

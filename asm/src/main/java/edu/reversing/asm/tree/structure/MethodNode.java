@@ -1,4 +1,4 @@
-package edu.reversing.asm.tree.element;
+package edu.reversing.asm.tree.structure;
 
 import edu.reversing.asm.analysis.ControlFlowAnalyzer;
 import edu.reversing.asm.tree.flow.BasicBlock;

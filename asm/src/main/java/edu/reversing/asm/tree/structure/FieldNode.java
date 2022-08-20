@@ -1,4 +1,4 @@
-package edu.reversing.asm.tree.element;
+package edu.reversing.asm.tree.structure;
 
 import org.objectweb.asm.Opcodes;
 

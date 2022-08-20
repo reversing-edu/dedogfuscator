@@ -1,9 +1,9 @@
 package edu.reversing.visitor.convention;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.data.Hierarchy;
-import edu.reversing.asm.tree.element.ClassNode;
-import edu.reversing.asm.tree.element.MethodNode;
+import edu.reversing.asm.tree.classpath.Hierarchy;
+import edu.reversing.asm.tree.structure.ClassNode;
+import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.Type;
