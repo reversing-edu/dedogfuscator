@@ -34,15 +34,15 @@ public abstract class ExprVisitor implements Opcodes {
         }
     }
 
-    public void visitBinaryJump(BinaryJumpExpr jump) {
+    public void visitBinaryJump(BinaryJumpExpr stmt) {
         if (delegate != null) {
-            delegate.visitBinaryJump(jump);
+            delegate.visitBinaryJump(stmt);
         }
     }
 
-    public void visitUnaryJump(UnaryJumpExpr jump) {
+    public void visitUnaryJump(UnaryJumpExpr stmt) {
         if (delegate != null) {
-            delegate.visitUnaryJump(jump);
+            delegate.visitUnaryJump(stmt);
         }
     }
 
