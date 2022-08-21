@@ -25,7 +25,6 @@ public class StrahlerNumberVisitor extends Visitor {
     public void visitCode(ClassNode cls, MethodNode method) {
         Map<Integer, LocalVariableDefinition> defs = new HashMap<>();
         if (cls.name.equals("a") && method.name.equals("iu")) {
-            System.out.println(method.localVariables.size());
             findReadWrites(method.getBasicBlocks(true), defs);
             //TODO compute scopes of var definition?
             //maybe just declare a new variable at each "write"
@@ -34,6 +33,24 @@ public class StrahlerNumberVisitor extends Visitor {
             //var1++;
             //field = var1;
             //var1 = var4; -> new var would be declared here instead of var1
+/*
+            for (LocalVariableDefinition def : defs.values()) {
+                int index = def.getIndex();
+                Queue<BasicBlock> queue = new LinkedList<>(def.getAccess());
+                while (!queue.isEmpty()) {
+                    BasicBlock current = queue.remove();
+                    if (def.getWrites().contains(current)) {
+                        index++;
+                    }
+
+                    for (AbstractInsnNode instruction : current.getInstructions()) {
+                        if (instruction instanceof VarInsnNode local
+                                && local.var == def.getIndex()) {
+                            local.var = index;
+                        }
+                    }
+                }
+            }*/
         }
     }
 
@@ -45,12 +62,15 @@ public class StrahlerNumberVisitor extends Visitor {
                     int opcode = local.getOpcode();
                     if (opcode >= ILOAD && opcode <= ALOAD) {
                         scope.getReads().add(block);
+                        scope.getAccess().add(block);
                     } else {
                         scope.getWrites().add(block);
+                        scope.getAccess().add(block);
                     }
                 } else if (instruction instanceof IincInsnNode increment) {
                     LocalVariableDefinition scope = scopes.computeIfAbsent(increment.var, LocalVariableDefinition::new);
                     scope.getWrites().add(block);
+                    scope.getAccess().add(block);
                 }
             }
         }
