@@ -47,8 +47,8 @@ public class VisitorContext {
     }
 
     public void inject(Injector injector) {
-        addFirst(injector.getInstance(StrahlerNumberVisitor.class));
-        addFirst(injector.getInstance(OpaquePredicateVisitor.class));
+        //addFirst(injector.getInstance(StrahlerNumberVisitor.class));
+        //addFirst(injector.getInstance(OpaquePredicateVisitor.class));
         addFirst(injector.getInstance(ExprOrderVisitor.class));
         addFirst(injector.getInstance(RedundantGotoVisitor.class));
         addFirst(injector.getInstance(ControlFlowDFSVisitor.class));
