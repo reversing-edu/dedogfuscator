@@ -26,16 +26,22 @@ public class OpaquePredicateVisitor extends Visitor {
     }
 
     @Override
+    public void preVisit() {
+        for (ClassNode cls : context.getLibrary()) {
+            for (MethodNode method : cls.methods) {
+                ExprTree tree = method.getExprTree(true);
+                tree.accept(new ConstantParameterFinder()); //find method calls which uses constant parameters
+                tree.accept(new ConstantParameterVerifier()); //verify that the verdicts are ONLY called with constants
+            }
+        }
+    }
+
+    @Override
     public void visitCode(ClassNode cls, MethodNode method) {
         ExprTree tree = method.getExprTree(true);
-        //find method calls which uses constant parameters
-        tree.accept(new ConstantParameterFinder());
 
-        //verify that the verdicts are ONLY called with constants
-        tree.accept(new ConstantParameterVerifier());
-
-        //find branches in those methods using those constants and remove them
-        tree.accept(new BranchRemover());
+        //find branches in verdict methods using those constants and insert a goto to redirect the flow
+        tree.accept(new GotoInserter());
     }
 
     private Expr getLastArg(InvokeExpr call) {
@@ -102,7 +108,7 @@ public class OpaquePredicateVisitor extends Visitor {
         }
     }
 
-    private class BranchRemover extends ExprVisitor {
+    private class GotoInserter extends ExprVisitor {
 
         @Override
         public void visitBinaryJump(BinaryJumpStmt stmt) {
@@ -125,39 +131,36 @@ public class OpaquePredicateVisitor extends Visitor {
                 return;
             }
 
-            int argCount = Type.getArgumentTypes(method.desc).length;
-            int startIndex = (method.access & ACC_STATIC) > 0 ? 0 : 1;
-            int varIndex = param.getIndex();
-            int lastArgIndex = (startIndex + argCount) - 1;
-            if (lastArgIndex == varIndex) {
-                JumpExpr stmt = (JumpExpr) expr.getParent();
-                Expr next = stmt.getNext();
-                if (next == null || (next.getOpcode() != ATHROW && next.getOpcode() != RETURN)) {
-                    return;
-                }
-
-                //shouldn't need, but validate it anyway
-                if (next.getOpcode() == ATHROW) {
-                    InvokeExpr exception = (InvokeExpr) next.layer(INVOKESPECIAL);
-                    if (exception == null || !exception.getInstruction().owner.contains("IllegalState")) {
-                        return;
-                    }
-                }
-
-                //TODO this breaks ClassWriter COMPUTE_MAXS
-                //redirect to fallthrough block
-                /*JumpInsnNode go = new JumpInsnNode(GOTO, stmt.getInstruction().label);
-                method.instructions.insert(stmt.getInstruction(), go);
-
-                for (AbstractInsnNode terminator : next.collapse()) {
-                    method.instructions.remove(terminator);
-                }
-
-                for (AbstractInsnNode condition : stmt.collapse()) {
-                    method.instructions.remove(condition);
-                }*/
-                removed++;
+            if (param.getIndex() != getLastParameterIndex(method)) {
+                return;
             }
+
+            JumpExpr stmt = (JumpExpr) expr.getParent();
+            Expr next = stmt.getNext();
+            if (next == null || (next.getOpcode() != ATHROW && next.getOpcode() != RETURN)) {
+                //TODO using getNext doesn't always work
+                return;
+            }
+
+            //redirect to fallthrough block
+            JumpInsnNode go = new JumpInsnNode(GOTO, stmt.getInstruction().label);
+            method.instructions.insert(expr.getInstruction(), go);
+            method.instructions.remove(expr.getInstruction());
+
+            //should be removing the statement too but i got asm errors doing that?
+
+            removed++;
+        }
+
+        private int getLastParameterIndex(MethodNode method) {
+            int index = (method.access & ACC_STATIC) > 0 ? -1 : 0;
+            for (Type arg : Type.getArgumentTypes(method.desc)) {
+                switch (arg.getDescriptor()) {
+                    case "D", "J" -> index += 2;
+                    default -> index += 1;
+                }
+            }
+            return index;
         }
     }
 }
