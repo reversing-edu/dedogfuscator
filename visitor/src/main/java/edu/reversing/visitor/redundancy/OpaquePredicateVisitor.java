@@ -144,11 +144,6 @@ public class OpaquePredicateVisitor extends Visitor {
                     }
                 }
 
-                System.out.println(method.owner + "." + method.name + method.desc);
-                System.out.println(stmt);
-                System.out.println(next);
-                System.out.println();
-
                 //TODO this breaks ClassWriter COMPUTE_MAXS
                 //redirect to fallthrough block
                 /*JumpInsnNode go = new JumpInsnNode(GOTO, stmt.getInstruction().label);
