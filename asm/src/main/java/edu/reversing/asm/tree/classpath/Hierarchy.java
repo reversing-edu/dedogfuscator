@@ -2,11 +2,15 @@ package edu.reversing.asm.tree.classpath;
 
 import com.google.inject.Inject;
 import edu.reversing.asm.tree.structure.ClassNode;
+import edu.reversing.asm.tree.structure.MethodNode;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
 public class Hierarchy {
 
@@ -55,6 +59,31 @@ public class Hierarchy {
         for (ClassNode cn : getParents(root)) {
             function.accept(cn);
         }
+    }
+
+    public boolean isOverriden(String owner, String name, String desc) {
+        for (ClassNode parentCls : getParents(owner)) {
+            for (MethodNode parentMethod : parentCls.methods) {
+                if (parentMethod.name.equals(name)
+                        && parentMethod.desc.equals(desc)
+                        && (parentMethod.access & ACC_STATIC) == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean extendsFrom(String cls, String check) {
+        return getParents(cls).stream().anyMatch(x -> x.name.equals(check));
+    }
+
+    public boolean isOverriden(MethodNode method) {
+        return isOverriden(method.owner, method.name, method.desc);
+    }
+
+    public boolean isOverriden(MethodInsnNode method) {
+        return isOverriden(method.owner, method.name, method.desc);
     }
 
     private void visit(ClassNode cls) {

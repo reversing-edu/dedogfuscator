@@ -1,7 +1,6 @@
 package edu.reversing.visitor.convention;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.classpath.Hierarchy;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
@@ -31,23 +30,8 @@ public class OverrideVisitor extends Visitor {
             return;
         }
 
-        Hierarchy hierarchy = context.getHierarchy();
-        boolean overriden = false;
-
         //method is not overriden
-        overrideLoop:
-        for (ClassNode parentCls : hierarchy.getParents(cls.name)) {
-            for (MethodNode parentMethod : parentCls.methods) {
-                if (parentMethod.name.equals(method.name)
-                        && parentMethod.desc.equals(method.desc)
-                        && (parentMethod.access & ACC_STATIC) == 0) {
-                    overriden = true;
-                    break overrideLoop;
-                }
-            }
-        }
-
-        if (!overriden) {
+        if (!context.getHierarchy().isOverriden(method)) {
             return;
         }
 

@@ -14,4 +14,8 @@ public class FieldNode extends org.objectweb.asm.tree.FieldNode {
     public FieldNode(int access, String owner, String name, String descriptor, String signature, Object value) {
         this(Opcodes.ASM9, access, owner, name, descriptor, signature, value);
     }
+
+    public String key() {
+        return owner + "." + name;
+    }
 }
