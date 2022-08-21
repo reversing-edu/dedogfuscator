@@ -60,9 +60,9 @@ public class Library implements Iterable<ClassNode> {
      * @throws IOException if an I/O error or zip format error has occurred
      */
     public void load(InputStream stream, int flags) throws IOException {
-        ClassNode node = new ClassNode();
-        new ClassReader(stream).accept(node, flags);
-        add(node);
+        ClassNode cls = new ClassNode();
+        new ClassReader(stream).accept(cls, flags);
+        add(cls);
     }
 
     /**

@@ -116,6 +116,7 @@ public class Hierarchy {
 
         try {
             cls = new ClassNode();
+            cls.external = true;
             ClassReader reader = new ClassReader(name);
             reader.accept(cls, ClassReader.SKIP_CODE);
             defined.put(name, cls);

@@ -9,6 +9,8 @@ public class ClassNode extends org.objectweb.asm.tree.ClassNode {
     public final List<FieldNode> fields;
     public final List<MethodNode> methods;
 
+    public boolean external = false;
+
     public ClassNode() {
         super(Opcodes.ASM9);
         this.fields = new BiList<>(super.fields);
