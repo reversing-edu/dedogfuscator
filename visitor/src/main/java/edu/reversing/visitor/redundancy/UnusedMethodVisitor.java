@@ -7,7 +7,6 @@ import edu.reversing.asm.tree.ir.InvokeExpr;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
-import edu.reversing.commons.Multimap;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 
@@ -58,8 +57,15 @@ public class UnusedMethodVisitor extends Visitor {
             cls.methods.removeAll(unused);
             removed += unused.size();
         }
+    }
 
-        System.out.println("Removed " + removed + "/" + total + " methods");
+    @Override
+    public void output(StringBuilder output) {
+        output.append("Removed ");
+        output.append(removed);
+        output.append("/");
+        output.append(total);
+        output.append(" methods");
     }
 
     private boolean isMethodUsed(ClassNode cls, MethodNode method, Library library, Hierarchy hierarchy) {

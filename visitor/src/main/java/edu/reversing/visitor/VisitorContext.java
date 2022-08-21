@@ -40,14 +40,26 @@ public class VisitorContext {
     }
 
     public void transform() {
+        StringBuilder output = new StringBuilder("Transforming classes...\n");
+        long start = System.currentTimeMillis();
         while (!visitors.isEmpty()) {
+            long visitorStart = System.currentTimeMillis();
             Visitor visitor = visitors.pop();
             visitor.transform();
+            output.append("\t");
+            visitor.output(output);
+            output.append(" (");
+            output.append(System.currentTimeMillis() - visitorStart);
+            output.append(" ms)\n");
         }
+        output.append("Executed transforms in ");
+        output.append(System.currentTimeMillis() - start);
+        output.append(" ms");
+        System.out.println(output);
     }
 
     public void inject(Injector injector) {
-        //addFirst(injector.getInstance(StrahlerNumberVisitor.class));
+        addFirst(injector.getInstance(StrahlerNumberVisitor.class));
         addFirst(injector.getInstance(OpaquePredicateVisitor.class));
         addFirst(injector.getInstance(ExprOrderVisitor.class));
         addFirst(injector.getInstance(RedundantGotoVisitor.class));

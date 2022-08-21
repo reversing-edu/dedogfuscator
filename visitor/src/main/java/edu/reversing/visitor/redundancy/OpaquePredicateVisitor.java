@@ -54,8 +54,10 @@ public class OpaquePredicateVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Removed " + removed + " opaque predicates");
+    public void output(StringBuilder output) {
+        output.append("Removed ");
+        output.append(removed);
+        output.append(" opaque predicates");
     }
 
     private class ConstantParameterFinder extends ExprVisitor {

@@ -69,7 +69,9 @@ public class TryCatchVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Removed " + removed + " try catch blocks");
+    public void output(StringBuilder output) {
+        output.append("Removed ");
+        output.append(removed);
+        output.append(" try catch blocks");
     }
 }

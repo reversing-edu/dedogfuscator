@@ -54,23 +54,20 @@ public class StrahlerNumberVisitor extends Visitor {
         }
     }
 
-    private void findReadWrites(List<BasicBlock> blocks, Map<Integer, LocalVariableDefinition> scopes) {
+    private void findReadWrites(List<BasicBlock> blocks, Map<Integer, LocalVariableDefinition> defs) {
         for (BasicBlock block : blocks) {
             for (AbstractInsnNode instruction : block.getInstructions()) {
                 if (instruction instanceof VarInsnNode local) {
-                    LocalVariableDefinition scope = scopes.computeIfAbsent(local.var, LocalVariableDefinition::new);
+                    LocalVariableDefinition def = defs.computeIfAbsent(local.var, LocalVariableDefinition::new);
                     int opcode = local.getOpcode();
                     if (opcode >= ILOAD && opcode <= ALOAD) {
-                        scope.getReads().add(block);
-                        scope.getAccess().add(block);
+                        def.getReads().add(block);
                     } else {
-                        scope.getWrites().add(block);
-                        scope.getAccess().add(block);
+                        def.getWrites().add(block);
                     }
                 } else if (instruction instanceof IincInsnNode increment) {
-                    LocalVariableDefinition scope = scopes.computeIfAbsent(increment.var, LocalVariableDefinition::new);
-                    scope.getWrites().add(block);
-                    scope.getAccess().add(block);
+                    LocalVariableDefinition def = defs.computeIfAbsent(increment.var, LocalVariableDefinition::new);
+                    def.getWrites().add(block);
                 }
             }
         }

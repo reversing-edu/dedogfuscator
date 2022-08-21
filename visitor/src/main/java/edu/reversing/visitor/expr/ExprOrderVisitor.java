@@ -130,7 +130,9 @@ public class ExprOrderVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Ordered " + ordered + " expressions");
+    public void output(StringBuilder output) {
+        output.append("Ordered ");
+        output.append(ordered);
+        output.append(" expressions");
     }
 }

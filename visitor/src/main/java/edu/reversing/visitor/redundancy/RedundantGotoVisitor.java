@@ -38,7 +38,9 @@ public class RedundantGotoVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Inlined " + removed + " GOTO instructions");
+    public void output(StringBuilder output) {
+        output.append("Inlined ");
+        output.append(removed);
+        output.append(" GOTO instructions");
     }
 }

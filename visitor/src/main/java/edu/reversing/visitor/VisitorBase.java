@@ -32,4 +32,8 @@ public abstract sealed class VisitorBase implements Opcodes permits Visitor {
     public void postVisit() {
 
     }
+
+    public void output(StringBuilder output) {
+        output.append(getClass().getSimpleName());
+    }
 }

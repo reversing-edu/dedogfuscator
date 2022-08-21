@@ -52,7 +52,9 @@ public class OverrideVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Inserted " + inserted + " @Override annotations");
+    public void output(StringBuilder output) {
+        output.append("Inserted ");
+        output.append(inserted);
+        output.append(" @Override annotations");
     }
 }

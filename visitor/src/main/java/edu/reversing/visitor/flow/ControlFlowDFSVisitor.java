@@ -1,9 +1,9 @@
 package edu.reversing.visitor.flow;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.flow.BasicBlock;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
-import edu.reversing.asm.tree.flow.BasicBlock;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
 import org.objectweb.asm.tree.*;
@@ -75,7 +75,9 @@ public class ControlFlowDFSVisitor extends Visitor {
     }
 
     @Override
-    public void postVisit() {
-        System.out.println("Built CFGs with " + generated + " basic blocks and performed DFS on methods");
+    public void output(StringBuilder output) {
+        output.append("Built CFGs with ");
+        output.append(generated);
+        output.append(" basic blocks and performed DFS on methods");
     }
 }

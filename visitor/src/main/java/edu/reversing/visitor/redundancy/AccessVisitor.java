@@ -9,6 +9,9 @@ import java.lang.reflect.Modifier;
 
 public class AccessVisitor extends Visitor {
 
+    private int publicized = 0;
+    private int definalized = 0;
+
     @Inject
     public AccessVisitor(VisitorContext context) {
         super(context);
@@ -36,12 +39,23 @@ public class AccessVisitor extends Visitor {
             }
 
             modifier |= Modifier.PUBLIC;
+            publicized++;
         }
 
         if (unfinal && (modifier & ACC_FINAL) > 0 && (modifier & ACC_STATIC) > 0) {
             modifier &= ~ACC_FINAL;
+            definalized++;
         }
 
         return modifier;
+    }
+
+    @Override
+    public void output(StringBuilder output) {
+        output.append("Publicized ");
+        output.append(publicized);
+        output.append(" members and definalized ");
+        output.append(definalized);
+        output.append(" members");
     }
 }
