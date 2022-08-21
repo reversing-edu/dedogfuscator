@@ -31,6 +31,15 @@ public class ClassNode extends org.objectweb.asm.tree.ClassNode {
         return method;
     }
 
+    public MethodNode getMethod(String name, String desc) {
+        for (MethodNode method : methods) {
+            if (method.name.equals(name) && method.desc.equals(desc)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     //still dont like this
     private static class BiList<T> extends ArrayList<T> {
 

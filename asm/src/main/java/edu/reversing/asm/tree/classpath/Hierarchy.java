@@ -41,24 +41,38 @@ public class Hierarchy {
         }
     }
 
-    public List<ClassNode> getChildren(String root) {
+    public List<ClassNode> getImmediateChildren(String root) {
         return children.getOrDefault(root, Collections.emptyList());
     }
 
-    public List<ClassNode> getParents(String root) {
+    public List<ClassNode> getImmediateParents(String root) {
         return parents.getOrDefault(root, Collections.emptyList());
     }
 
     public void visitChildrenOf(String root, Consumer<ClassNode> function) {
-        for (ClassNode cn : getChildren(root)) {
+        for (ClassNode cn : getImmediateChildren(root)) {
             function.accept(cn);
+            visitChildrenOf(cn.name, function);
         }
     }
 
     public void visitParentsOf(String root, Consumer<ClassNode> function) {
-        for (ClassNode cn : getParents(root)) {
+        for (ClassNode cn : getImmediateParents(root)) {
             function.accept(cn);
+            visitParentsOf(cn.name, function);
         }
+    }
+
+    public Set<ClassNode> getParents(String root) {
+        Set<ClassNode> parents = new HashSet<>();
+        visitParentsOf(root, parents::add);
+        return parents;
+    }
+
+    public Set<ClassNode> getChildren(String root) {
+        Set<ClassNode> children = new HashSet<>();
+        visitChildrenOf(root, children::add);
+        return children;
     }
 
     public boolean isOverriden(String owner, String name, String desc) {

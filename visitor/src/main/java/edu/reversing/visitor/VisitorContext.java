@@ -55,5 +55,6 @@ public class VisitorContext {
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(OverrideVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
+        addFirst(injector.getInstance(UnusedMethodVisitor.class));
     }
 }
