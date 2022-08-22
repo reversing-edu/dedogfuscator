@@ -29,19 +29,36 @@ public class OpaquePredicateVisitor extends Visitor {
     public void preVisit() {
         for (ClassNode cls : context.getLibrary()) {
             for (MethodNode method : cls.methods) {
-                ExprTree tree = method.getExprTree(true);
-                tree.accept(new ConstantParameterFinder()); //find method calls which uses constant parameters
-                tree.accept(new ConstantParameterVerifier()); //verify that the verdicts are ONLY called with constants
+                //find method calls which uses constant parameters
+                method.getExprTree(false).accept(new ConstantParameterFinder());
+            }
+        }
+
+        for (ClassNode cls : context.getLibrary()) {
+            for (MethodNode method : cls.methods) {
+                //verify that the verdicts are ONLY called with constants
+                method.getExprTree(false).accept(new ConstantParameterVerifier());
             }
         }
     }
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        ExprTree tree = method.getExprTree(true);
+        //TODO check hierarchy methods
+        if (verdicts.stream().noneMatch(call -> call.equals(method.key()))) {
+            return;
+        }
+
+        int index = (method.access & ACC_STATIC) > 0 ? -1 : 0;
+        for (Type arg : Type.getArgumentTypes(method.desc)) {
+            switch (arg.getDescriptor()) {
+                case "D", "J" -> index += 2;
+                default -> index += 1;
+            }
+        }
 
         //find branches in verdict methods using those constants and insert a goto to redirect the flow
-        tree.accept(new GotoInserter());
+        method.getExprTree(true).accept(new GotoInserter(index));
     }
 
     private Expr getLastArg(InvokeExpr call) {
@@ -93,7 +110,6 @@ public class OpaquePredicateVisitor extends Visitor {
         public void visitInvoke(InvokeExpr call) {
             //TODO check overriden
             //also child calls like npc.getModel instead of actor.getModel
-            Set<String> remove = new HashSet<>();
             for (String verdict : verdicts) {
                 if (verdict.equals(call.key())) {
                     Expr last = getLastArg(call);
@@ -101,16 +117,20 @@ public class OpaquePredicateVisitor extends Visitor {
                         continue;
                     }
 
-                    //method was called without a constant, remove it
-                    remove.add(verdict);
+                    verdicts.remove(verdict);
+                    break;
                 }
             }
-
-            verdicts.removeIf(remove::contains);
         }
     }
 
     private class GotoInserter extends ExprVisitor {
+
+        private final int lastParamIndex;
+
+        private GotoInserter(int lastParamIndex) {
+            this.lastParamIndex = lastParamIndex;
+        }
 
         @Override
         public void visitBinaryJump(BinaryJumpStmt stmt) {
@@ -123,28 +143,20 @@ public class OpaquePredicateVisitor extends Visitor {
         }
 
         private void process(Expr expr) {
-            //TODO check hierarchy methods
-            MethodNode method = expr.getRoot().getMethod();
-            if (verdicts.stream().noneMatch(call -> call.equals(method.key()))) {
-                return;
-            }
-
-            if (!(expr instanceof VarExpr param)) {
-                return;
-            }
-
-            if (param.getIndex() != getLastParameterIndex(method)) {
+            if (!(expr instanceof VarExpr param) || param.getIndex() != lastParamIndex) {
                 return;
             }
 
             JumpExpr stmt = (JumpExpr) expr.getParent();
-            Expr next = stmt.getNext();
+
+            //TODO using getNext to verify this doesn't always work, but it shouldn't be needed. may need to fix if theres false positives being removed
+   /*         Expr next = stmt.getNext();
             if (next == null || (next.getOpcode() != ATHROW && next.getOpcode() != RETURN)) {
-                //TODO using getNext doesn't always work
                 return;
-            }
+            }*/
 
             //redirect to fallthrough block
+            MethodNode method = expr.getRoot().getMethod();
             JumpInsnNode go = new JumpInsnNode(GOTO, stmt.getInstruction().label);
             method.instructions.insert(expr.getInstruction(), go);
             method.instructions.remove(expr.getInstruction());
@@ -152,17 +164,6 @@ public class OpaquePredicateVisitor extends Visitor {
             //should be removing the statement too but i got asm errors doing that?
 
             removed++;
-        }
-
-        private int getLastParameterIndex(MethodNode method) {
-            int index = (method.access & ACC_STATIC) > 0 ? -1 : 0;
-            for (Type arg : Type.getArgumentTypes(method.desc)) {
-                switch (arg.getDescriptor()) {
-                    case "D", "J" -> index += 2;
-                    default -> index += 1;
-                }
-            }
-            return index;
         }
     }
 }

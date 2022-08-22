@@ -9,6 +9,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
@@ -49,18 +50,33 @@ public class Hierarchy {
         return parents.getOrDefault(root, Collections.emptyList());
     }
 
-    public void visitChildrenOf(String root, Consumer<ClassNode> function) {
-        for (ClassNode cn : getImmediateChildren(root)) {
-            function.accept(cn);
-            visitChildrenOf(cn.name, function);
+    private void visitHierarchy(
+            Set<String> visited,
+            String root,
+            Consumer<ClassNode> visitor,
+            Function<String, List<ClassNode>> provider) {
+        if (visited.contains(root)) {
+            return;
+        }
+
+        for (ClassNode cn : provider.apply(root)) {
+            visitor.accept(cn);
+            visited.add(root);
+            visitHierarchy(visited, cn.name, visitor, provider);
         }
     }
 
-    public void visitParentsOf(String root, Consumer<ClassNode> function) {
-        for (ClassNode cn : getImmediateParents(root)) {
-            function.accept(cn);
-            visitParentsOf(cn.name, function);
-        }
+    public void visitChildrenOf(String root, Consumer<ClassNode> visitor) {
+        visitHierarchy(new HashSet<>(), root, visitor, this::getImmediateChildren);
+    }
+
+    public void visitParentsOf(String root, Consumer<ClassNode> visitor) {
+        visitHierarchy(new HashSet<>(), root, visitor, this::getImmediateParents);
+    }
+
+    public void visitAll(String root, Consumer<ClassNode> visitor) {
+        visitChildrenOf(root, visitor);
+        visitParentsOf(root, visitor);
     }
 
     public Set<ClassNode> getParents(String root) {
