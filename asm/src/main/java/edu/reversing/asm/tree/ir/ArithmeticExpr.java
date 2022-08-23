@@ -38,61 +38,68 @@ public class ArithmeticExpr extends Expr {
 
     public enum Operation {
 
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        REM,
-        NEG,
-        SHIFT,
-        AND,
-        OR,
-        XOR;
+        ADD(IADD, LADD, FADD, DADD),
+        SUB(ISUB, LSUB, FSUB, DSUB),
+        MUL(IMUL, LMUL, FMUL, DMUL),
+        DIV(IDIV, LDIV, FDIV, DDIV),
+        REM(IREM, LREM, FREM, DREM),
+        NEG(INEG, LNEG, FNEG, DNEG),
+        SHL(ISHL, LSHL),
+        SHR(ISHR, LSHR),
+        USHR(IUSHR, LUSHR),
+        AND(IAND, LAND),
+        OR(IOR, LOR),
+        XOR(IXOR, LXOR);
+
+        private static final Class<? extends Number>[] CLASSES = new Class[]{int.class, long.class, float.class, double.class};
+
+        private final int[] opcodes;
+
+        Operation(int i, int j, int f, int d) {
+            this.opcodes = new int[]{i, j, f, d};
+        }
+
+        Operation(int i, int j) {
+            this(i, j, -1, -1);
+        }
 
         public static Operation valueOf(int opcode) {
-            switch (opcode) {
-                case IADD, LADD, FADD, DADD -> {
-                    return ADD;
+            for (Operation operation : values()) {
+                for (int op : operation.opcodes) {
+                    if (opcode == op) {
+                        return operation;
+                    }
                 }
-
-                case ISUB, LSUB, FSUB, DSUB -> {
-                    return SUB;
-                }
-
-                case IMUL, LMUL, FMUL, DMUL -> {
-                    return MUL;
-                }
-
-                case IDIV, LDIV, FDIV, DDIV -> {
-                    return DIV;
-                }
-
-                case IREM, LREM, FREM, DREM -> {
-                    return REM;
-                }
-
-                case INEG, LNEG, FNEG, DNEG -> {
-                    return NEG;
-                }
-
-                case ISHL, LSHL, ISHR, LSHR, IUSHR, LUSHR -> {
-                    return SHIFT;
-                }
-
-                case IAND, LAND -> {
-                    return AND;
-                }
-
-                case IOR, LOR -> {
-                    return OR;
-                }
-
-                case IXOR, LXOR -> {
-                    return XOR;
-                }
-
-                default -> throw new IllegalArgumentException("Invalid Operation: " + Printer.OPCODES[opcode]);
             }
+
+            throw new IllegalArgumentException("Unsupported Operation: " + Printer.OPCODES[opcode]);
+        }
+
+        public static Class<? extends Number> getType(int opcode) {
+            for (Operation operation : Operation.values()) {
+                int[] opcodes = operation.opcodes;
+                for (int i = 0; i < opcodes.length; i++) {
+                    if (opcodes[i] == opcode) {
+                        return CLASSES[i];
+                    }
+                }
+            }
+
+            throw new IllegalArgumentException("Unknown type: " + Printer.OPCODES[opcode]);
+        }
+
+        public int getOpcode(Class<? extends Number> type) {
+            if (type == int.class) {
+                return opcodes[0];
+            } else if (type == long.class) {
+                return opcodes[1];
+            } else if (type == float.class) {
+                return opcodes[2];
+            } else if (type == double.class) {
+                return opcodes[3];
+            }
+
+            throw new IllegalArgumentException("Unsupported type: " + type.getSimpleName());
         }
     }
 }

@@ -6,7 +6,7 @@ import edu.reversing.asm.tree.classpath.Hierarchy;
 import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.visitor.convention.OverrideVisitor;
 import edu.reversing.visitor.expr.ExprOrderVisitor;
-import edu.reversing.visitor.expr.AddSubVisitor;
+import edu.reversing.visitor.expr.AddSubNegateVisitor;
 import edu.reversing.visitor.flow.ControlFlowDFSVisitor;
 import edu.reversing.visitor.redundancy.*;
 import edu.reversing.visitor.strahler.StrahlerNumberVisitor;
@@ -65,7 +65,7 @@ public class VisitorContext {
         addFirst(injector.getInstance(OpaquePredicateVisitor.class));
 
         //ast
-        addFirst(injector.getInstance(AddSubVisitor.class));
+        //addFirst(injector.getInstance(AddSubNegateVisitor.class)); //need to remove multis first
         addFirst(injector.getInstance(ExprOrderVisitor.class));
 
         //block sorting
