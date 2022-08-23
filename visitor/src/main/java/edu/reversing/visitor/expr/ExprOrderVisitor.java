@@ -28,8 +28,8 @@ public class ExprOrderVisitor extends Visitor {
             }
 
             @Override
-            public void visitOperation(ArithmeticExpr operation) {
-                process(operation, operation.getLeft(), operation.getRight());
+            public void visitOperation(ArithmeticExpr expr) {
+                process(expr, expr.getLeft(), expr.getRight());
             }
         });
     }
@@ -115,8 +115,8 @@ public class ExprOrderVisitor extends Visitor {
                 return v1.getIndex() > v2.getIndex();
             }
 
-            if (rctx.getOpcode() == DUP) {
-                return true;
+            if (lctx.getOpcode() == DUP || rctx.getOpcode() == DUP) {
+                return false;
             }
         }
 
@@ -131,8 +131,6 @@ public class ExprOrderVisitor extends Visitor {
 
     @Override
     public void output(StringBuilder output) {
-        output.append("Ordered ");
-        output.append(ordered);
-        output.append(" expressions");
+        output.append("Ordered ").append(ordered).append(" expressions");
     }
 }

@@ -57,9 +57,9 @@ public abstract class ExprVisitor implements Opcodes {
         }
     }
 
-    public void visitOperation(ArithmeticExpr operation) {
+    public void visitOperation(ArithmeticExpr expr) {
         if (delegate != null) {
-            delegate.visitOperation(operation);
+            delegate.visitOperation(expr);
         }
     }
 

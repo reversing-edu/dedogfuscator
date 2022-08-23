@@ -6,7 +6,7 @@ import edu.reversing.asm.tree.classpath.Hierarchy;
 import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.visitor.convention.OverrideVisitor;
 import edu.reversing.visitor.expr.ExprOrderVisitor;
-import edu.reversing.visitor.expr.ResolveJumpExprVisitor;
+import edu.reversing.visitor.expr.AddSubVisitor;
 import edu.reversing.visitor.flow.ControlFlowDFSVisitor;
 import edu.reversing.visitor.redundancy.*;
 import edu.reversing.visitor.strahler.StrahlerNumberVisitor;
@@ -60,13 +60,13 @@ public class VisitorContext {
     }
 
     public void inject(Injector injector) {
-        //actual deobfuscation
+        //deobfuscation
         addFirst(injector.getInstance(StrahlerNumberVisitor.class));
         addFirst(injector.getInstance(OpaquePredicateVisitor.class));
 
         //ast
+        addFirst(injector.getInstance(AddSubVisitor.class));
         addFirst(injector.getInstance(ExprOrderVisitor.class));
-        addFirst(injector.getInstance(ResolveJumpExprVisitor.class));
 
         //block sorting
         addFirst(injector.getInstance(RedundantGotoVisitor.class));

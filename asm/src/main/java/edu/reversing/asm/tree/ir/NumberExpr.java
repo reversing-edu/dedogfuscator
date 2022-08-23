@@ -45,6 +45,11 @@ public class NumberExpr extends Expr {
         return -1;
     }
 
+    public boolean isFloatingPointValue() {
+        int op = getInstruction().getOpcode();
+        return op >= FCONST_0 && op <= DCONST_1;
+    }
+
     public double getFloatingPointValue() {
         AbstractInsnNode instruction = getInstruction();
         int op = instruction.getOpcode();
@@ -61,5 +66,20 @@ public class NumberExpr extends Expr {
                 return -1;
             }
         }
+    }
+
+    public Sign getSign() {
+        long value = getValue();
+        if (value > 0) {
+            return Sign.POSITIVE;
+        } else if (value < 0) {
+            return Sign.NEGATIVE;
+        }
+
+        return Sign.NEUTRAL;
+    }
+
+    public enum Sign {
+        POSITIVE, NEGATIVE, NEUTRAL;
     }
 }
