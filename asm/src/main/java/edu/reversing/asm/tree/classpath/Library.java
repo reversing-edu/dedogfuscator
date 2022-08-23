@@ -79,8 +79,6 @@ public class Library implements Iterable<ClassNode> {
 
     /**
      * Writes the library to a file
-     * <p>
-     * TODO: if multiple archives are loaded via add(ZipFile, int) should we save them as multiple archives? or should they be stored in 1 file like the method below already does
      *
      * @param target the location to save the file
      * @param flags  option flags that can be used to modify the default behavior of the {@link ClassWriter}

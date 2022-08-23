@@ -8,7 +8,6 @@ public class NumberExpr extends Expr {
         super(tree, instruction, consume, produce);
     }
 
-    //TODO floats? cant remember if ldc applies to that. would need to change this long return tho woops
     public long getValue() {
         AbstractInsnNode instruction = getInstruction();
         int op = instruction.getOpcode();
@@ -44,5 +43,23 @@ public class NumberExpr extends Expr {
         }
 
         return -1;
+    }
+
+    public double getFloatingPointValue() {
+        AbstractInsnNode instruction = getInstruction();
+        int op = instruction.getOpcode();
+        switch (op) {
+            case FCONST_0, FCONST_1, FCONST_2 -> {
+                return op - FCONST_0;
+            }
+
+            case DCONST_0, DCONST_1 -> {
+                return op - DCONST_0;
+            }
+
+            default -> {
+                return -1;
+            }
+        }
     }
 }

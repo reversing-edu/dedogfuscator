@@ -3,7 +3,6 @@ package edu.reversing.asm.tree.ir;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 
-//TODO merge BasicBlock into this so we don't use labels in the ast
 public sealed class JumpExpr extends Expr permits GotoExpr, BinaryJumpStmt, UnaryJumpStmt {
 
     private TargetExpr target;

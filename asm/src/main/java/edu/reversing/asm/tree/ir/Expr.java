@@ -85,8 +85,6 @@ public class Expr extends Tree<Expr> implements Opcodes {
         return instruction.getOpcode();
     }
 
-    //TODO i dont like having to override this in other exprs
-    //generics create too many <?> instances because getNext/getPrevious and other functions dont know types
     public AbstractInsnNode getInstruction() {
         return instruction;
     }
@@ -97,7 +95,6 @@ public class Expr extends Tree<Expr> implements Opcodes {
     }
 
     //TODO set(expr)
-    //TODO visitor
 
     //should we make some Query api and move layer/preLayer/getChildren out of Expr?
     public List<Expr> getChildren(int opcode) {

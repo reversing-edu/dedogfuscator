@@ -36,10 +36,20 @@ public class ControlFlowAnalyzer extends Analyzer<BasicValue> {
         return block;
     }
 
+    private BasicBlock getBlock(int instructionIndex) {
+        for (BasicBlock block : blocks) {
+            if (block.contains(instructionIndex)) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     protected void newControlFlowEdge(int insnIndex, int successorIndex) {
-        BasicBlock current = blocks.stream().filter(x -> x.contains(insnIndex)).findFirst().orElse(null);
-        BasicBlock successor = blocks.stream().filter(x -> x.contains(successorIndex)).findFirst().orElse(null);
+        BasicBlock current = getBlock(insnIndex);
+        BasicBlock successor = getBlock(successorIndex);
         if (current == successor
                 || current == null
                 || successor == null) {

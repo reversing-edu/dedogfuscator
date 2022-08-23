@@ -13,7 +13,6 @@ import org.objectweb.asm.tree.*;
 import java.util.*;
 
 //TODO this is slow and has a few other TODOs
-//also doesn't seem to find all of them, misses some (seemingly static methods? but i didnt check)
 public class OpaquePredicateVisitor extends Visitor {
 
     private final Set<String> verdicts = new HashSet<>();

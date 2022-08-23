@@ -4,6 +4,7 @@ import edu.reversing.asm.analysis.ControlFlowAnalyzer;
 import edu.reversing.asm.tree.flow.BasicBlock;
 import edu.reversing.asm.tree.ir.ExprTree;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 
 import java.util.Collections;
@@ -33,6 +34,7 @@ public class MethodNode extends org.objectweb.asm.tree.MethodNode {
         return tree;
     }
 
+    //Note: This method is raw blocks not dfs sorted
     public List<BasicBlock> getBasicBlocks(boolean forceBuild) {
         if (forceBuild || blocks == null) {
             ControlFlowAnalyzer analyzer = new ControlFlowAnalyzer();
@@ -45,6 +47,17 @@ public class MethodNode extends org.objectweb.asm.tree.MethodNode {
             }
         }
         return blocks;
+    }
+
+    private BasicBlock getBasicBlock(AbstractInsnNode instruction) {
+        int index = instructions.indexOf(instruction);
+        for (BasicBlock block : blocks) {
+            if (block.contains(index)) {
+                return block;
+            }
+        }
+
+        return null;
     }
 
     //TODO maybe some key cache/hashing

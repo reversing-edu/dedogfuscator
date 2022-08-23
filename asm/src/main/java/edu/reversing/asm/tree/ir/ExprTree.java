@@ -1,8 +1,8 @@
 package edu.reversing.asm.tree.ir;
 
 import edu.reversing.asm.commons.Instructions;
-import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
+import edu.reversing.asm.tree.structure.MethodNode;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
