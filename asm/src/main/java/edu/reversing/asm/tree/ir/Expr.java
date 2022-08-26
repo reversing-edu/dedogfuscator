@@ -40,8 +40,7 @@ public class Expr extends Tree<Expr> implements Opcodes {
     }
 
     public Expr[] getProducing() {
-        int size = size();
-        Expr[] exprs = new Expr[size];
+        Expr[] exprs = new Expr[size()];
         int i = 0;
         for (Expr child : this) {
             if (child.produce > 0) {

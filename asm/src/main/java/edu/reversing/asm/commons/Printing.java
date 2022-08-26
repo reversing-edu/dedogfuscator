@@ -8,6 +8,10 @@ import static org.objectweb.asm.tree.AbstractInsnNode.*;
 public class Printing {
 
     public static String toString(AbstractInsnNode instruction) {
+        if (instruction == null) {
+            return "null";
+        }
+
         int opcode = instruction.getOpcode();
         if (opcode == -1) {
             return instruction.toString();

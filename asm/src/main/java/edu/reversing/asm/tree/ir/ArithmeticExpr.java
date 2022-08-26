@@ -1,5 +1,6 @@
 package edu.reversing.asm.tree.ir;
 
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.util.Printer;
 
@@ -86,6 +87,16 @@ public class ArithmeticExpr extends Expr {
             }
 
             throw new IllegalArgumentException("Unknown type: " + Printer.OPCODES[opcode]);
+        }
+
+        public int getOpcode(Type type) {
+            return switch (type.getDescriptor()) {
+                case "I" -> getOpcode(int.class);
+                case "J" -> getOpcode(long.class);
+                case "F" -> getOpcode(float.class);
+                case "D" -> getOpcode(double.class);
+                default -> throw new IllegalArgumentException("Unexpected descriptor: " + type.getDescriptor());
+            };
         }
 
         public int getOpcode(Class<? extends Number> type) {
