@@ -18,4 +18,23 @@ public class FieldExpr extends Expr {
         int op = getOpcode();
         return op == GETSTATIC || op == PUTSTATIC;
     }
+
+    public boolean isGetting() {
+        int op = getOpcode();
+        return op == GETSTATIC || op == GETFIELD;
+    }
+
+    public boolean isSetting() {
+        int op = getOpcode();
+        return op == PUTSTATIC || op == PUTFIELD;
+    }
+
+    public String key() {
+        FieldInsnNode instruction = getInstruction();
+        return instruction.owner + "." + instruction.name;
+    }
+
+    public String getDescriptor() {
+        return getInstruction().desc;
+    }
 }

@@ -5,8 +5,9 @@ import com.google.inject.Injector;
 import edu.reversing.asm.tree.classpath.Hierarchy;
 import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.visitor.convention.OverrideVisitor;
+import edu.reversing.visitor.expr.DupVisitor;
 import edu.reversing.visitor.expr.ExprOrderVisitor;
-import edu.reversing.visitor.expr.AddSubNegateVisitor;
+import edu.reversing.visitor.expr.multiplier.MultiplierVisitor;
 import edu.reversing.visitor.flow.ControlFlowDFSVisitor;
 import edu.reversing.visitor.redundancy.*;
 import edu.reversing.visitor.strahler.StrahlerNumberVisitor;
@@ -60,13 +61,15 @@ public class VisitorContext {
     }
 
     public void inject(Injector injector) {
-        //deobfuscation
+        //code deob
         addFirst(injector.getInstance(StrahlerNumberVisitor.class));
         addFirst(injector.getInstance(OpaquePredicateVisitor.class));
 
-        //ast
-        //addFirst(injector.getInstance(AddSubNegateVisitor.class)); //need to remove multis first
+        //ast deob
+        //addFirst(injector.getInstance(AddSubNegateVisitor.class)); //need to remove multis first, also idk how safe this is yet
+        addFirst(injector.getInstance(MultiplierVisitor.class));
         addFirst(injector.getInstance(ExprOrderVisitor.class));
+        addFirst(injector.getInstance(DupVisitor.class));
 
         //block sorting
         addFirst(injector.getInstance(RedundantGotoVisitor.class));
@@ -75,7 +78,7 @@ public class VisitorContext {
         //convention
         addFirst(injector.getInstance(OverrideVisitor.class));
 
-        //non dependant and eases other above visitors
+        //redundancy and general cleanup
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
         addFirst(injector.getInstance(UnusedMethodVisitor.class));
