@@ -1,14 +1,19 @@
 package edu.reversing.asm.tree.structure;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
+import java.util.function.Predicate;
 
 public class FieldNode extends org.objectweb.asm.tree.FieldNode {
 
-    public String owner;
+    private final String owner;
+    private final Type type;
 
     public FieldNode(int api, int access, String owner, String name, String descriptor, String signature, Object value) {
         super(api, access, name, descriptor, signature, value);
         this.owner = owner;
+        this.type = Type.getType(descriptor);
     }
 
     public FieldNode(int access, String owner, String name, String descriptor, String signature, Object value) {
@@ -17,5 +22,21 @@ public class FieldNode extends org.objectweb.asm.tree.FieldNode {
 
     public String key() {
         return owner + "." + name;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public boolean isType(Predicate<Type> predicate) {
+        return predicate.test(type);
+    }
+
+    public boolean isType(String descriptor) {
+        return isType(type -> type.getDescriptor().equals(descriptor));
     }
 }

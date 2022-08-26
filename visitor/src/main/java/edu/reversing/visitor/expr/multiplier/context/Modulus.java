@@ -1,4 +1,6 @@
-package edu.reversing.visitor.expr.multiplier;
+package edu.reversing.visitor.expr.multiplier.context;
+
+import org.objectweb.asm.Type;
 
 import java.math.BigInteger;
 
@@ -16,8 +18,8 @@ public class Modulus {
         this(quotient, longType ? 64 : 32);
     }
 
-    public Modulus(BigInteger quotient, String desc) {
-        this(quotient, desc.equals("J"));
+    public Modulus(BigInteger quotient, Type type) {
+        this(quotient, type.getDescriptor().equals("J"));
     }
 
     public BigInteger inverse() {

@@ -4,6 +4,7 @@ import com.google.inject.*;
 import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.configuration.Configuration;
 import edu.reversing.visitor.VisitorContext;
+import edu.reversing.visitor.expr.multiplier.MultiplierIdentifier;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -31,6 +32,7 @@ public class Dedogfuscator {
         protected void configure() {
             //i dont know if this is the correct way to do it
             bind(Library.class).asEagerSingleton();
+            bind(MultiplierIdentifier.class).asEagerSingleton();
         }
     }
 }

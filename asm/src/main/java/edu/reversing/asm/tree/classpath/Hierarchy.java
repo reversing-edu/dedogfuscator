@@ -109,7 +109,7 @@ public class Hierarchy {
     }
 
     public boolean isOverriden(MethodNode method) {
-        return isOverriden(method.owner, method.name, method.desc);
+        return isOverriden(method.getOwner(), method.name, method.desc);
     }
 
     public boolean isOverriden(MethodInsnNode method) {
