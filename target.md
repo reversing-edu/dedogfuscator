@@ -1,15 +1,14 @@
-- Unused methods
-- Multipliers
-- Try catch blocks
-- Opaque predicates
+- ~~Unused methods~~ hierarchy tree is scuffed maybe
+- Multipliers - identification is mostly working
+- ~~Try catch blocks~~
+- ~~Opaque predicates~~
 - Dummy and unused parameters
-- Block sorting
+- ~~Block sorting~~
 - for method calls that use the same parameter every time (constant parameter) they can be inlined
   or changed to a constant field reference?
-- Block sorting (cfg)
 - Source compatible naming including the ability to rename from a file consisting of mappings
-- Access modifiers (make everything public?)
-- redundant gotos
+- ~~Access modifiers~~
+- ~~redundant gotos~~
 - dead/unreachable code
 - Exploits for moving members to their original classes, maybe ordering too.
   See https://github.com/alexanderhenne/osrs-exploits/blob/master/src/main/java/com/uniquepassive/osrsexploits/GamepackMethodOriginalClassFinder.java
@@ -21,8 +20,8 @@
 - Remove empty classes? After moving methods to their original classes and moving fields there
   should be some
 - source level: cleaner scopes and branching (favour early return over else)
-- Statement ordering (via AST). If statements, artihmetic operations, operation precedence in
-  general. We can do this at source level maybe easier
+- ~~Statement ordering (via AST). If statements, artihmetic operations, operation precedence in
+  general.~~
 - source level: transform loops i.e for each/for i > while etc
 - hexadecimal in specific numbers?
 - increment preference
