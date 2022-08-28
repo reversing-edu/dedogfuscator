@@ -21,3 +21,5 @@ out/
 
 # Gay MacOS shit
 *.DS_Store
+
+/library/

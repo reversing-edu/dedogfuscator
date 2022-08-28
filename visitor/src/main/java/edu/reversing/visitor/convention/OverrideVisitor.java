@@ -31,7 +31,7 @@ public class OverrideVisitor extends Visitor {
         }
 
         //method is not overriden
-        if (!context.getHierarchy().isOverriden(method)) {
+        if (!context.getHierarchy().isOverridden(method)) {
             return;
         }
 

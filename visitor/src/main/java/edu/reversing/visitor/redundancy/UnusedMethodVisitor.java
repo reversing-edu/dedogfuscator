@@ -50,7 +50,27 @@ public class UnusedMethodVisitor extends Visitor {
             List<MethodNode> unused = new ArrayList<>();
             for (MethodNode method : cls.methods) {
                 if (!isMethodUsed(cls, method, library, hierarchy)) {
-                    unused.add(method);
+                    MethodNode parentMethod = getParentMethod(cls, method);
+                    boolean inherited = false;
+                    if (parentMethod != null) {
+                        for (ClassNode child : hierarchy.getChildren(parentMethod.getOwner())) {
+                            if (child.name.equals(cls.name)) {
+                                continue;
+                            }
+                            for (MethodNode mn : child.methods) {
+                                if (mn.name.equals(method.name) && mn.desc.equals(method.desc)) {
+                                    inherited = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!inherited && parentMethod != null) {
+                        unused.add(parentMethod);
+                    }
+                    if (!inherited) {
+                        unused.add(method);
+                    }
                 }
             }
 
@@ -58,6 +78,8 @@ public class UnusedMethodVisitor extends Visitor {
             removed += unused.size();
         }
     }
+
+    int hackIndex = 0;
 
     @Override
     public void output(StringBuilder output) {
@@ -82,7 +104,6 @@ public class UnusedMethodVisitor extends Visitor {
             if (!library.loaded(parent.name)) {
                 return true;
             }
-
             if (called.contains(parent.name + "." + method.name + method.desc)) {
                 return true;
             }
@@ -95,5 +116,17 @@ public class UnusedMethodVisitor extends Visitor {
         }
 
         return false;
+    }
+
+    private MethodNode getParentMethod(ClassNode cls, MethodNode method) {
+        Hierarchy hierarchy = context.getHierarchy();
+        for (ClassNode parent : hierarchy.getParents(cls.name)) {
+            for (MethodNode mn : parent.methods) {
+                if (mn.name.equals(method.name) && mn.desc.equals(method.desc)) {
+                    return mn;
+                }
+            }
+        }
+        return null;
     }
 }
