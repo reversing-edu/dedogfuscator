@@ -85,6 +85,17 @@ public class Hierarchy {
         return parents;
     }
 
+    public MethodNode getParentMethod(ClassNode cls, MethodNode method) {
+        for (ClassNode parent : getParents(cls.name)) {
+            for (MethodNode mn : parent.methods) {
+                if (mn.name.equals(method.name) && mn.desc.equals(method.desc)) {
+                    return mn;
+                }
+            }
+        }
+        return null;
+    }
+
     public Set<ClassNode> getChildren(String root) {
         Set<ClassNode> children = new HashSet<>();
         visitChildrenOf(root, children::add);
