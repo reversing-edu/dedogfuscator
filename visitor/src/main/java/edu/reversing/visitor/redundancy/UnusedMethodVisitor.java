@@ -64,9 +64,9 @@ public class UnusedMethodVisitor extends Visitor {
                                 }
                             }
                         }
-                    }
-                    if (!inherited && parentMethod != null) {
-                        unused.add(parentMethod);
+                        if (!inherited) {
+                            unused.add(parentMethod);
+                        }
                     }
                     if (!inherited) {
                         unused.add(method);
