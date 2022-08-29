@@ -1,6 +1,8 @@
 package edu.reversing.visitor.redundancy;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.ir.CastExpr;
+import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
@@ -26,6 +28,12 @@ public class RedundantCastVisitor  extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
+        method.getExprTree(true).accept(new ExprVisitor() {
+            @Override
+            public void visitCast(CastExpr call) {
+                System.out.println(call);
+            }
+        });
         for (AbstractInsnNode instruction : method.instructions) {
             if (instruction.getOpcode() != CHECKCAST) {
                 continue;

@@ -104,4 +104,10 @@ public abstract class ExprVisitor implements Opcodes {
             delegate.visitInvoke(call);
         }
     }
+
+    public void visitCast(CastExpr call) {
+        if (delegate != null) {
+            delegate.visitCast(call);
+        }
+    }
 }
