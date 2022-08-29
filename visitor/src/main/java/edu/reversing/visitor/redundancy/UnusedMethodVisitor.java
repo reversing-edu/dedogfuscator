@@ -31,7 +31,7 @@ public class UnusedMethodVisitor extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        if (!cls.name.equals("client") || method.name.equals("init")) {
+        if (!cls.name.equals("client") || !method.name.equals("init")) {
             return;
         }
 
