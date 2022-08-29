@@ -18,7 +18,7 @@
   See https://github.com/alexanderhenne/osrs-exploits/blob/master/src/main/java/com/uniquepassive/osrsexploits/GamepackMethodOriginalClassFinder.java
 - Strahler number (obber reuses local vars over and over)
 - copy propagation
-- Invert if statements 
+- Invert if statements
 - Remove unused local vars
 - convert ints to character literals where appropriate
 - Remove empty classes? After moving methods to their original classes and moving fields there
