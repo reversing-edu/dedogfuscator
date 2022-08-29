@@ -136,6 +136,9 @@ public class ExprTree extends Expr {
         //TODO ew
         //missing cast insns
 
+        if (opcode == CHECKCAST) {
+            return new CastExpr(this, instruction, consume, produce);
+        }
         if (opcode == BIPUSH || opcode == SIPUSH || (opcode >= ICONST_M1 && opcode <= DCONST_1)) {
             return new NumberExpr(this, instruction, consume, produce);
         }

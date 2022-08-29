@@ -183,6 +183,8 @@ public class Expr extends Tree<Expr> implements Opcodes {
             v.visitVar((VarExpr) this);
         } else if (this instanceof InvokeExpr) {
             v.visitInvoke((InvokeExpr) this);
+        } else if (this instanceof CastExpr) {
+            v.visitCast((CastExpr) this);
         }
     }
 
