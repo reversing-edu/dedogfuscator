@@ -31,15 +31,23 @@ public class UnusedMethodVisitor extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        //TODO this is super lenient but it does the job, a more accurate and better approach would be to
-        //traverse outgoing method calls starting from client.init()
+        if (!cls.name.equals("client") || method.name.equals("init")) {
+            return;
+        }
+
+       // //TODO this is super lenient but it does the job, a more accurate and better approach would be to
+        ////traverse outgoing method calls starting from client.init()
         method.getExprTree(true).accept(new ExprVisitor() {
             @Override
             public void visitInvoke(InvokeExpr call) {
-                called.add(call.key());
+                if (!called.contains(call.key())) {
+                    called.add(call.key());
+                    call.accept(this);
+                }
             }
         });
     }
+
 
     @Override
     public void postVisit() {
@@ -47,10 +55,13 @@ public class UnusedMethodVisitor extends Visitor {
         Hierarchy hierarchy = context.getHierarchy();
 
         for (ClassNode cls : library) {
-            List<MethodNode> unused = new ArrayList<>();
+            Set<MethodNode> unused = new HashSet<>();
             for (MethodNode method : cls.methods) {
                 if (!isMethodUsed(cls, method, library, hierarchy)) {
-                    unused.add(method);
+                    MethodNode parentMethod = hierarchy.getParentMethod(cls, method);
+                    if (parentMethod == null) {
+                        unused.add(method);
+                    }
                 }
             }
 
@@ -82,7 +93,6 @@ public class UnusedMethodVisitor extends Visitor {
             if (!library.loaded(parent.name)) {
                 return true;
             }
-
             if (called.contains(parent.name + "." + method.name + method.desc)) {
                 return true;
             }

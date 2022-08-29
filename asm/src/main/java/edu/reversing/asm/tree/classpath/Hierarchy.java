@@ -85,13 +85,24 @@ public class Hierarchy {
         return parents;
     }
 
+    public MethodNode getParentMethod(ClassNode cls, MethodNode method) {
+        for (ClassNode parent : getParents(cls.name)) {
+            for (MethodNode mn : parent.methods) {
+                if (mn.name.equals(method.name) && mn.desc.equals(method.desc)) {
+                    return mn;
+                }
+            }
+        }
+        return null;
+    }
+
     public Set<ClassNode> getChildren(String root) {
         Set<ClassNode> children = new HashSet<>();
         visitChildrenOf(root, children::add);
         return children;
     }
 
-    public boolean isOverriden(String owner, String name, String desc) {
+    public boolean isOverridden(String owner, String name, String desc) {
         for (ClassNode parentCls : getParents(owner)) {
             for (MethodNode parentMethod : parentCls.methods) {
                 if (parentMethod.name.equals(name)
@@ -108,12 +119,12 @@ public class Hierarchy {
         return getParents(cls).stream().anyMatch(x -> x.name.equals(check));
     }
 
-    public boolean isOverriden(MethodNode method) {
-        return isOverriden(method.getOwner(), method.name, method.desc);
+    public boolean isOverridden(MethodNode method) {
+        return isOverridden(method.getOwner(), method.name, method.desc);
     }
 
-    public boolean isOverriden(MethodInsnNode method) {
-        return isOverriden(method.owner, method.name, method.desc);
+    public boolean isOverridden(MethodInsnNode method) {
+        return isOverridden(method.owner, method.name, method.desc);
     }
 
     private void visit(ClassNode cls) {
