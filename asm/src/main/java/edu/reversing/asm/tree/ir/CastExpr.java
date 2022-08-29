@@ -13,4 +13,8 @@ public class CastExpr extends Expr {
         return (TypeInsnNode) super.getInstruction();
     }
 
+    public int getTarget() {
+        return 1;
+    }
+
 }
