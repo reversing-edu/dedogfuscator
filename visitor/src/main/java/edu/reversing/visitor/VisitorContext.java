@@ -82,5 +82,6 @@ public class VisitorContext {
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
         addFirst(injector.getInstance(UnusedMethodVisitor.class));
+        addFirst(injector.getInstance(RedundantCastVisitor.class));
     }
 }
