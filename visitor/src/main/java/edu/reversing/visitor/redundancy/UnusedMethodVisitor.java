@@ -31,18 +31,15 @@ public class UnusedMethodVisitor extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        if (!cls.name.equals("client") || !method.name.equals("init")) {
+        if (!cls.superName.equals("java/applet/Applet") || !method.name.equals("init")) {
             return;
         }
 
-       // //TODO this is super lenient but it does the job, a more accurate and better approach would be to
-        ////traverse outgoing method calls starting from client.init()
         method.getExprTree(true).accept(new ExprVisitor() {
             @Override
             public void visitInvoke(InvokeExpr call) {
                 if (!called.contains(call.key())) {
                     called.add(call.key());
-                    call.accept(this);
                 }
             }
         });
