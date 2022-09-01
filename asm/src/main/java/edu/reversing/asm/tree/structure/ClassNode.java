@@ -40,6 +40,15 @@ public class ClassNode extends org.objectweb.asm.tree.ClassNode {
         return null;
     }
 
+    public FieldNode getField(String name, String desc) {
+        for (FieldNode field : fields) {
+            if (field.name.equals(name) && (desc == null || field.desc.equals(desc))) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     //still dont like this
     private static class BiList<T> extends ArrayList<T> {
 

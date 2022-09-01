@@ -70,6 +70,7 @@ public class VisitorContext {
         addFirst(injector.getInstance(MultiplierRemover.class));
         addFirst(injector.getInstance(MultiplierIdentifier.class));
         addFirst(injector.getInstance(ExprOrderVisitor.class));
+        addFirst(injector.getInstance(RedundantCastVisitor.class));
 
         //block sorting
         addFirst(injector.getInstance(RedundantGotoVisitor.class));
@@ -82,6 +83,5 @@ public class VisitorContext {
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
         addFirst(injector.getInstance(UnusedMethodVisitor.class));
-        addFirst(injector.getInstance(RedundantCastVisitor.class));
     }
 }

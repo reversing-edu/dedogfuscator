@@ -28,10 +28,10 @@ public class Multiplier {
         return encoder;
     }
 
-    public boolean validate() {
+    public long getProduct() {
         BigInteger quotient = decoder.getQuotient();
         long decoder = longType ? quotient.longValue() : quotient.intValue();
         long encoder = longType ? this.encoder.longValue() : this.encoder.intValue();
-        return decoder * encoder == 1;
+        return decoder * encoder;
     }
 }
