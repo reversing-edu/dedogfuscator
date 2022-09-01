@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import edu.reversing.asm.tree.classpath.Hierarchy;
 import edu.reversing.asm.tree.classpath.Library;
+import edu.reversing.visitor.convention.GenerifyVisitor;
 import edu.reversing.visitor.convention.OverrideVisitor;
 import edu.reversing.visitor.expr.ExprOrderVisitor;
 import edu.reversing.visitor.expr.multiplier.MultiplierIdentifier;
@@ -72,6 +73,8 @@ public class VisitorContext {
         addFirst(injector.getInstance(ExprOrderVisitor.class));
         addFirst(injector.getInstance(RedundantCastVisitor.class));
 
+        addFirst(injector.getInstance(GenerifyVisitor.class));
+
         //block sorting
         addFirst(injector.getInstance(RedundantGotoVisitor.class));
         addFirst(injector.getInstance(ControlFlowDFSVisitor.class));
@@ -83,5 +86,6 @@ public class VisitorContext {
         addFirst(injector.getInstance(TryCatchVisitor.class));
         addFirst(injector.getInstance(AccessVisitor.class));
         addFirst(injector.getInstance(UnusedMethodVisitor.class));
+
     }
 }

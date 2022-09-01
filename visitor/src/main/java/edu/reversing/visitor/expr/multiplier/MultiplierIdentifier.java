@@ -291,14 +291,14 @@ public class MultiplierIdentifier extends Visitor {
                 if (invalidatedDecoders.containsKey(encoder)) {
                     output.append(", got invalidated decoder though");
                 }
-                System.out.println(output);
+               // System.out.println(output);
                 //i think ive covered all decoder cases, so in this case it was probably constant folded
             }
         }
 
         for (String decoder : decoders.keySet()) {
             if (!encoders.containsKey(decoder)) {
-                System.out.println("Have decoder for " + decoder + " but no encoder");
+                //System.out.println("Have decoder for " + decoder + " but no encoder");
                 //might still be missing some cases to identify all encoders
                 //but after that, if this condition still fails
                 //just use modInverse of decoder as the encoder

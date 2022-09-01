@@ -33,5 +33,10 @@
 - ternarys
 - transform classes into enums if possible
 - transform certain casts into generics like `List` -> `List<Node>`
+
+
+
+
+
 - generify rs classes like NodeDeque
 - anything else that makes source code cleaner?
