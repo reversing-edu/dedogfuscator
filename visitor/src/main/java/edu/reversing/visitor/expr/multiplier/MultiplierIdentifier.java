@@ -240,27 +240,6 @@ public class MultiplierIdentifier extends Visitor {
         return null;
     }
 
-    private FieldNode getTrueField(String cls, String name, String desc) {
-        Library library = context.getLibrary();
-        ClassNode owner = library.lookup(cls);
-        if (owner == null) {
-            throw new RuntimeException("?");
-        }
-
-        if (owner.getField(name, desc) != null) {
-            return owner.getField(name, desc);
-        }
-
-        while ((owner = library.lookup(owner.superName)) != null) {
-            FieldNode parentField = owner.getField(name, desc);
-            if (parentField != null && (parentField.access & ACC_PRIVATE) == 0) {
-                return parentField;
-            }
-        }
-
-        return null;
-    }
-
     private void registerEncoder(FieldExpr field, NumberExpr constant) {
         String key = getTrueKey(field);
         if (key == null) {
@@ -285,7 +264,6 @@ public class MultiplierIdentifier extends Visitor {
         }
 
         Map<String, DecodeContext> map = modulus.validate() ? decoders : invalidatedDecoders;
-
         DecodeContext context = map.computeIfAbsent(key, x -> new DecodeContext());
         context.getExpressions().put(expr, modulus);
     }

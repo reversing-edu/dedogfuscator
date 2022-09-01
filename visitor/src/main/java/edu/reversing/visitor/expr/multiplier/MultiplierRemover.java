@@ -1,6 +1,8 @@
 package edu.reversing.visitor.expr.multiplier;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.ir.FieldExpr;
+import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
@@ -33,6 +35,18 @@ public class MultiplierRemover extends Visitor {
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
+        method.getExprTree(true).accept(new ExprVisitor() {
+            @Override
+            public void visitField(FieldExpr field) {
+                if (field.key().equals("iu.w")) {
+                    //note: some fields with encoders but no decoders are only used once, for example this one
+                    //in that case we just remove the multiplier
 
+                    /*System.out.println("weirrrd");
+                    System.out.println(field);
+                    System.out.println();*/
+                }
+            }
+        });
     }
 }
