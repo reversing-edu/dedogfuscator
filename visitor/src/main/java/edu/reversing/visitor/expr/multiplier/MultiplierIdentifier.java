@@ -1,11 +1,11 @@
 package edu.reversing.visitor.expr.multiplier;
 
 import com.google.inject.Inject;
+import edu.reversing.asm.tree.classpath.Library;
 import edu.reversing.asm.tree.ir.*;
 import edu.reversing.asm.tree.ir.ArithmeticExpr.Operation;
 import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
-import edu.reversing.asm.tree.structure.ClassNode;
-import edu.reversing.asm.tree.structure.MethodNode;
+import edu.reversing.asm.tree.structure.*;
 import edu.reversing.commons.Pair;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
@@ -19,13 +19,43 @@ public class MultiplierIdentifier extends Visitor {
 
     private static final int[] DUPS = {DUP, DUP_X1, DUP_X2, DUP2, DUP2_X1, DUP2_X2};
 
-    //ew
     private final Map<String, DecodeContext> decoders = new HashMap<>();
+    private final Map<String, DecodeContext> invalidatedDecoders = new HashMap<>();
+
     private final Map<String, EncodeContext> encoders = new HashMap<>();
 
     @Inject
     public MultiplierIdentifier(VisitorContext context) {
         super(context);
+    }
+
+    private static boolean isDup(int opcode) {
+        for (int dup : DUPS) {
+            if (opcode == dup) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isMultiplicationOperation(ArithmeticExpr expr) {
+        if (expr.getOperation() != Operation.MUL) {
+            return false;
+        }
+
+        Class<? extends Number> type = Operation.getType(expr.getOpcode());
+        return type == int.class || type == long.class;
+    }
+
+    private static Pair<FieldExpr, NumberExpr> toChildrenPair(ArithmeticExpr expr) {
+        Expr lhs = expr.getLeft();
+        Expr rhs = expr.getRight();
+        if (lhs instanceof FieldExpr field && rhs instanceof NumberExpr num) {
+            return new Pair<>(field, num);
+        }
+
+        //ExprOrderVisitor should have already switched them so don't need to check rhs for field and lhs for num
+        return null;
     }
 
     @Override
@@ -36,10 +66,6 @@ public class MultiplierIdentifier extends Visitor {
             public void visitOperation(ArithmeticExpr expr) {
                 extractDecoder(expr);
                 extractEncoder(expr);
-                //TODO extract encoders which aren't directly encoded
-                //i.e increments, decrements and dup contexts
-                //encoders will have the same issue of dups
-                //possibly easier to just write a visitor to collapse dups in the bytecode?
             }
 
             @Override
@@ -85,7 +111,7 @@ public class MultiplierIdentifier extends Visitor {
         for (Expr child : operations) {
             ArithmeticExpr operation = (ArithmeticExpr) child;
             Pair<FieldExpr, NumberExpr> pair = toChildrenPair(operation);
-            if (pair == null || pair.getLeft().key().equals(field.key())) {
+            if (pair == null || !pair.getLeft().key().equals(field.key())) {
                 continue;
             }
 
@@ -156,10 +182,6 @@ public class MultiplierIdentifier extends Visitor {
         NumberExpr encoder = children.getRight();
 
         Modulus modulus = new Modulus(BigInteger.valueOf(encoder.getValue()), field.getType());
-        if (!modulus.validate()) {
-            return;
-        }
-
         registerDecoder(field, expr, modulus);
     }
 
@@ -185,50 +207,86 @@ public class MultiplierIdentifier extends Visitor {
         registerEncoder(field, constant);
     }
 
-    private boolean isDup(int opcode) {
-        for (int dup : DUPS) {
-            if (opcode == dup) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isMultiplicationOperation(ArithmeticExpr expr) {
-        if (expr.getOperation() != Operation.MUL) {
-            return false;
-        }
-
-        Class<? extends Number> type = Operation.getType(expr.getOpcode());
-        return type == int.class || type == long.class;
-    }
-
-    private Pair<FieldExpr, NumberExpr> toChildrenPair(ArithmeticExpr expr) {
-        Expr lhs = expr.getLeft();
-        Expr rhs = expr.getRight();
-        if (lhs instanceof FieldExpr field && rhs instanceof NumberExpr num) {
-            return new Pair<>(field, num);
-        }
-
-        //ExprOrderVisitor should have already switched them so don't need to check rhs for field and lhs for num
-        return null;
-    }
-
     public Map<String, DecodeContext> getDecoders() {
         return decoders;
+    }
+
+    public Map<String, DecodeContext> getInvalidatedDecoders() {
+        return invalidatedDecoders;
     }
 
     public Map<String, EncodeContext> getEncoders() {
         return encoders;
     }
 
+    private String getTrueKey(FieldExpr field) {
+        Library library = context.getLibrary();
+        ClassNode owner = library.lookup(field.getOwner());
+        if (owner == null) {
+            throw new RuntimeException("?");
+        }
+
+        if (owner.getField(field.getName(), field.getType().getDescriptor()) != null) {
+            return field.key();
+        }
+
+        while ((owner = library.lookup(owner.superName)) != null) {
+            FieldNode parentField = owner.getField(field.getName(), field.getType().getDescriptor());
+            if (parentField != null && (parentField.access & ACC_PRIVATE) == 0) {
+                return parentField.key();
+            }
+        }
+
+        return null;
+    }
+
+    private FieldNode getTrueField(String cls, String name, String desc) {
+        Library library = context.getLibrary();
+        ClassNode owner = library.lookup(cls);
+        if (owner == null) {
+            throw new RuntimeException("?");
+        }
+
+        if (owner.getField(name, desc) != null) {
+            return owner.getField(name, desc);
+        }
+
+        while ((owner = library.lookup(owner.superName)) != null) {
+            FieldNode parentField = owner.getField(name, desc);
+            if (parentField != null && (parentField.access & ACC_PRIVATE) == 0) {
+                return parentField;
+            }
+        }
+
+        return null;
+    }
+
     private void registerEncoder(FieldExpr field, NumberExpr constant) {
-        EncodeContext context = encoders.computeIfAbsent(field.key(), x -> new EncodeContext());
-        context.getExpressions().put(field, BigInteger.valueOf(constant.getValue()));
+        String key = getTrueKey(field);
+        if (key == null) {
+            System.err.println("Failed to resolve field key for " + field.key() + " (" + field.getType().getDescriptor() + ") ?");
+            return;
+        }
+
+        long value = constant.getValue();
+        if ((value % 2) == 0) {
+            return;
+        }
+
+        EncodeContext context = encoders.computeIfAbsent(key, x -> new EncodeContext());
+        context.getExpressions().put(field, BigInteger.valueOf(value));
     }
 
     private void registerDecoder(FieldExpr field, ArithmeticExpr expr, Modulus modulus) {
-        DecodeContext context = decoders.computeIfAbsent(field.key(), x -> new DecodeContext());
+        String key = getTrueKey(field);
+        if (key == null) {
+            System.err.println("Failed to resolve field key for " + field.key() + " (" + field.getType().getDescriptor() + ") ?");
+            return;
+        }
+
+        Map<String, DecodeContext> map = modulus.validate() ? decoders : invalidatedDecoders;
+
+        DecodeContext context = map.computeIfAbsent(key, x -> new DecodeContext());
         context.getExpressions().put(expr, modulus);
     }
 
@@ -238,5 +296,35 @@ public class MultiplierIdentifier extends Visitor {
         output.append(decoders.size()).append(" decoders");
         output.append(" and ");
         output.append(encoders.size()).append(" encoders");
+    }
+
+    @Override
+    public void postVisit() {
+        //if there's a valid one, we shouldn't need any that we're unsure about?
+        for (String validated : decoders.keySet()) {
+            invalidatedDecoders.remove(validated);
+        }
+
+        for (String encoder : encoders.keySet()) {
+            if (!decoders.containsKey(encoder)) {
+                StringBuilder output = new StringBuilder("Have encoder for ");
+                output.append(encoder);
+                output.append(" but no decoder ");
+                if (invalidatedDecoders.containsKey(encoder)) {
+                    output.append(", got invalidated decoder though");
+                }
+                System.out.println(output);
+                //i think ive covered all decoder cases, so in this case it was probably constant folded
+            }
+        }
+
+        for (String decoder : decoders.keySet()) {
+            if (!encoders.containsKey(decoder)) {
+                System.out.println("Have decoder for " + decoder + " but no encoder");
+                //might still be missing some cases to identify all encoders
+                //but after that, if this condition still fails
+                //just use modInverse of decoder as the encoder
+            }
+        }
     }
 }

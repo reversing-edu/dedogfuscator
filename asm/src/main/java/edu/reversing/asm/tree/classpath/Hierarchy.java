@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
+//TODO this is scuffed?
 public class Hierarchy {
 
     private final Library library;

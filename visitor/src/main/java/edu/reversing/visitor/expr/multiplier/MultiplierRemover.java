@@ -1,8 +1,6 @@
 package edu.reversing.visitor.expr.multiplier;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.ir.Expr;
-import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
@@ -13,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MultiplierRemover extends Visitor {
-
-    private static final int[] DUPS = {DUP, DUP_X1, DUP_X2, DUP2, DUP2_X1, DUP2_X2};
 
     private final Map<String, Multiplier> multipliers = new HashMap<>();
 
@@ -28,23 +24,15 @@ public class MultiplierRemover extends Visitor {
 
     @Override
     public void preVisit() {
-        //pull encoders and decoders, create Multiplier object from them
-        //if Multiplier.validate add to map
+        //pull encoders and decoders from identifier, create Multiplier object from them
+        //multiplier.getProduct multiplies encoder * decoder
+        //if its 1 its a valid multiplier
+        //-1 means 1 of the operands is negated
+        //other number means constant folded?
     }
 
     @Override
     public void visitCode(ClassNode cls, MethodNode method) {
-        method.getExprTree(true).accept(new ExprVisitor() {
-            @Override
-            public void visitAny(Expr expr) {
-                for (int dup : DUPS) {
-                    if (expr.getOpcode() == dup && expr.getCumulativeSize() < 20 && expr.getCumulativeSize() > 3) {
-                        //  System.out.println(expr.getRoot().getMethod().key());
-                        //  System.out.println("par " + Printing.toString(expr.getParent().getInstruction()));
-                        //  System.out.println(expr);
-                    }
-                }
-            }
-        });
+
     }
 }

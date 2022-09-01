@@ -61,7 +61,11 @@ public class Library implements Iterable<ClassNode> {
      */
     public void load(InputStream stream, int flags) throws IOException {
         ClassNode cls = new ClassNode();
-        new ClassReader(stream).accept(cls, flags);
+        try {
+            new ClassReader(stream).accept(cls, flags);
+        } catch (Exception e) {
+
+        }
         add(cls);
     }
 
