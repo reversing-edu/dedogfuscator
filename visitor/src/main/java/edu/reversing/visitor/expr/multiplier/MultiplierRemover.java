@@ -1,52 +1,98 @@
 package edu.reversing.visitor.expr.multiplier;
 
 import com.google.inject.Inject;
-import edu.reversing.asm.tree.ir.FieldExpr;
-import edu.reversing.asm.tree.ir.visitor.ExprVisitor;
 import edu.reversing.asm.tree.structure.ClassNode;
 import edu.reversing.asm.tree.structure.MethodNode;
 import edu.reversing.visitor.Visitor;
 import edu.reversing.visitor.VisitorContext;
-import edu.reversing.visitor.expr.multiplier.context.Multiplier;
+import edu.reversing.visitor.expr.multiplier.context.DecodeContext;
+import edu.reversing.visitor.expr.multiplier.context.EncodeContext;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.math.BigInteger;
+import java.util.*;
 
 public class MultiplierRemover extends Visitor {
 
-    private final Map<String, Multiplier> multipliers = new HashMap<>();
+  private final Map<String, Multiplier> multipliers = new HashMap<>();
 
-    private final MultiplierIdentifier identifier;
+  private final MultiplierIdentifier identifier;
 
-    @Inject
-    public MultiplierRemover(VisitorContext context, MultiplierIdentifier identifier) {
-        super(context);
-        this.identifier = identifier;
-    }
+  @Inject
+  public MultiplierRemover(VisitorContext context, MultiplierIdentifier identifier) {
+    super(context);
+    this.identifier = identifier;
+  }
 
-    @Override
-    public void preVisit() {
-        //pull encoders and decoders from identifier, create Multiplier object from them
-        //multiplier.getProduct multiplies encoder * decoder
-        //if its 1 its a valid multiplier
-        //-1 means 1 of the operands is negated
-        //other number means constant folded?
-    }
+  @Override
+  public void preVisit() {
+    Set<String> keys = new HashSet<>();
+    keys.addAll(identifier.getDecoders().keySet());
+    keys.addAll(identifier.getEncoders().keySet());
+    keys.addAll(identifier.getInvalidatedDecoders().keySet());
 
-    @Override
-    public void visitCode(ClassNode cls, MethodNode method) {
-        method.getExprTree(true).accept(new ExprVisitor() {
-            @Override
-            public void visitField(FieldExpr field) {
-                if (field.key().equals("iu.w")) {
-                    //note: some fields with encoders but no decoders are only used once, for example this one
-                    //in that case we just remove the multiplier
+    for (String key : keys) {
+      DecodeContext decoders = identifier.getDecoders(key);
+      EncodeContext encoders = identifier.getEncoders(key);
+      if (decoders == null && encoders == null) {
+        //no multiplier, maybe we can use invalidated one here?
+        continue;
+      }
 
-                    /*System.out.println("weirrrd");
-                    System.out.println(field);
-                    System.out.println();*/
-                }
+      if (decoders != null && encoders == null) {
+        //use inverse
+        Modulus best = decoders.getBest();
+        if (best == null) {
+          best = decoders.getExpressions().values().stream().findAny().orElseThrow();
+        }
+
+        multipliers.put(key, new Multiplier(key, best, best.inverse()));
+        continue;
+      }
+
+      if (decoders != null) {
+        //use both
+        Collection<Modulus> quotients = decoders.getExpressions().values();
+        Collection<BigInteger> products = encoders.getExpressions().values();
+        for (Modulus q : quotients) {
+          for (BigInteger p : products) {
+            if (q.getQuotient().multiply(p).longValue() == 1) {
+              multipliers.put(key, new Multiplier(key, q, p));
             }
-        });
+          }
+        }
+      }
+
+      DecodeContext invalidated = identifier.getInvalidatedDecoders().get(key);
+      if (decoders == null && invalidated != null) {
+        //handle constant folded values
+      }
+
+      if (decoders != null) {
+        //last case.. just inverse as failsafe
+        Modulus best = decoders.getBest();
+        if (best == null) {
+          best = decoders.getExpressions().values().stream().findAny().orElseThrow();
+        }
+
+        multipliers.put(key, new Multiplier(key, best, best.inverse()));
+      }
     }
+  }
+
+  @Override
+  public void visitCode(ClassNode cls, MethodNode method) {
+
+  }
+
+  @Override
+  public void postVisit() {
+
+  }
+
+  @Override
+  public void output(StringBuilder output) {
+    output.append("Identified ");
+    output.append(multipliers.size());
+    output.append(" multiplier pairs (validated)");
+  }
 }

@@ -5,36 +5,36 @@ import org.objectweb.asm.tree.JumpInsnNode;
 
 public sealed class JumpExpr extends Expr permits GotoExpr, BinaryJumpStmt, UnaryJumpStmt {
 
-    private TargetExpr target;
+  private TargetExpr target;
 
-    public JumpExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
-        super(tree, instruction, consume, produce);
+  public JumpExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    super(tree, instruction, consume, produce);
+  }
+
+  public TargetExpr getTarget() {
+    return target;
+  }
+
+  public void setTarget(TargetExpr target) {
+    if (this.target != null) {
+      this.target.getTargeters().remove(this);
     }
 
-    public TargetExpr getTarget() {
-        return target;
+    this.target = target;
+    if (target == null) {
+      getInstruction().label = null;
+      return;
     }
 
-    public void setTarget(TargetExpr target) {
-        if (this.target != null) {
-            this.target.getTargeters().remove(this);
-        }
+    target.getTargeters().add(this);
+    getInstruction().label = target.getInstruction();
+  }
 
-        this.target = target;
-        if (target == null) {
-            getInstruction().label = null;
-            return;
-        }
+  public Expr resolve() {
+    return target.resolve();
+  }
 
-        target.getTargeters().add(this);
-        getInstruction().label = target.getInstruction();
-    }
-
-    public Expr resolve() {
-        return target.resolve();
-    }
-
-    public JumpInsnNode getInstruction() {
-        return (JumpInsnNode) super.getInstruction();
-    }
+  public JumpInsnNode getInstruction() {
+    return (JumpInsnNode) super.getInstruction();
+  }
 }

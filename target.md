@@ -1,9 +1,10 @@
 - Unused methods
-  - Should be operational, if you want to get a little more strict check to see if all inherited methods are unused and remove them + the parent method
-  - hierarchy tree is scuffed maybe
+    - Should be operational, if you want to get a little more strict check to see if all inherited
+      methods are unused and remove them + the parent method
+    - hierarchy tree is scuffed maybe
 - Multipliers
-  - identification is mostly working
-  - Constant folding work around required
+    - identification is mostly working
+    - Constant folding work around required
 - Try catch blocks
 - Opaque predicates
 - Dummy and unused parameters

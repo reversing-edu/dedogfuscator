@@ -12,27 +12,26 @@ import java.io.IOException;
 
 public class Dedogfuscator {
 
-    public static void main(String... args) throws IOException {
-        Configuration configuration = Configuration.valueOf(args);
+  public static void main(String... args) throws IOException {
+    Configuration configuration = Configuration.valueOf(args);
 
-        Injector injector = Guice.createInjector(new Module());
-        Library library = injector.getInstance(Library.class);
-        library.load(configuration.getInput(), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+    Injector injector = Guice.createInjector(new Module());
+    Library library = injector.getInstance(Library.class);
+    library.load(configuration.getInput(), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 
-        VisitorContext context = injector.getInstance(VisitorContext.class);
-        context.inject(injector);         //i dont like this
-        context.transform();
+    VisitorContext context = injector.getInstance(VisitorContext.class);
+    context.inject(injector);         //i dont like this
+    context.transform();
 
-        library.write(configuration.getOutput(), ClassWriter.COMPUTE_MAXS);
+    library.write(configuration.getOutput(), ClassWriter.COMPUTE_MAXS);
+  }
+
+  private static class Module extends AbstractModule {
+
+    @Override
+    protected void configure() {
+      bind(Library.class).asEagerSingleton();
+      bind(MultiplierIdentifier.class).asEagerSingleton();
     }
-
-    private static class Module extends AbstractModule {
-
-        @Override
-        protected void configure() {
-            //i dont know if this is the correct way to do it
-            bind(Library.class).asEagerSingleton();
-            bind(MultiplierIdentifier.class).asEagerSingleton();
-        }
-    }
+  }
 }

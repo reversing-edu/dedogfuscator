@@ -18,37 +18,37 @@ import edu.reversing.visitor.VisitorContext;
  */
 public class RedundantCastVisitor extends Visitor {
 
-    private int removed = 0;
+  private int removed = 0;
 
-    @Inject
-    protected RedundantCastVisitor(VisitorContext context) {
-        super(context);
-    }
+  @Inject
+  protected RedundantCastVisitor(VisitorContext context) {
+    super(context);
+  }
 
-    @Override
-    public void visitCode(ClassNode cls, MethodNode method) {
-        method.getExprTree(true).accept(new ExprVisitor() {
-            @Override
-            public void visitCast(CastExpr cast) {
-                if (cast.getOpcode() != CHECKCAST) {
-                    return;
-                }
+  @Override
+  public void visitCode(ClassNode cls, MethodNode method) {
+    method.getExprTree(true).accept(new ExprVisitor() {
+      @Override
+      public void visitCast(CastExpr cast) {
+        if (cast.getOpcode() != CHECKCAST) {
+          return;
+        }
 
-                Expr target = cast.get(0);
-                if (target.getOpcode() != ACONST_NULL) {
-                    return;
-                }
+        Expr target = cast.get(0);
+        if (target.getOpcode() != ACONST_NULL) {
+          return;
+        }
 
-                removed++;
-                method.instructions.remove(cast.getInstruction());
-            }
-        });
-    }
+        removed++;
+        method.instructions.remove(cast.getInstruction());
+      }
+    });
+  }
 
-    @Override
-    public void output(StringBuilder output) {
-        output.append("Removed ");
-        output.append(removed);
-        output.append(" null casts");
-    }
+  @Override
+  public void output(StringBuilder output) {
+    output.append("Removed ");
+    output.append(removed);
+    output.append(" null casts");
+  }
 }

@@ -10,37 +10,37 @@ import org.objectweb.asm.tree.JumpInsnNode;
 
 public class RedundantGotoVisitor extends Visitor {
 
-    private int removed = 0;
+  private int removed = 0;
 
-    @Inject
-    public RedundantGotoVisitor(VisitorContext context) {
-        super(context);
+  @Inject
+  public RedundantGotoVisitor(VisitorContext context) {
+    super(context);
+  }
+
+  @Override
+  public void visitCode(ClassNode cls, MethodNode method) {
+    for (AbstractInsnNode instruction : method.instructions.toArray()) {
+      if (instruction.getOpcode() != GOTO) {
+        continue;
+      }
+
+      JumpInsnNode jump = (JumpInsnNode) instruction;
+      AbstractInsnNode next = jump.getNext();
+      if (next == null || next.getType() != AbstractInsnNode.LABEL) {
+        continue;
+      }
+
+      if (jump.label == next) {
+        method.instructions.remove(instruction);
+        removed++;
+      }
     }
+  }
 
-    @Override
-    public void visitCode(ClassNode cls, MethodNode method) {
-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
-            if (instruction.getOpcode() != GOTO) {
-                continue;
-            }
-
-            JumpInsnNode jump = (JumpInsnNode) instruction;
-            AbstractInsnNode next = jump.getNext();
-            if (next == null || next.getType() != AbstractInsnNode.LABEL) {
-                continue;
-            }
-
-            if (jump.label == next) {
-                method.instructions.remove(instruction);
-                removed++;
-            }
-        }
-    }
-
-    @Override
-    public void output(StringBuilder output) {
-        output.append("Inlined ");
-        output.append(removed);
-        output.append(" GOTO instructions");
-    }
+  @Override
+  public void output(StringBuilder output) {
+    output.append("Inlined ");
+    output.append(removed);
+    output.append(" GOTO instructions");
+  }
 }

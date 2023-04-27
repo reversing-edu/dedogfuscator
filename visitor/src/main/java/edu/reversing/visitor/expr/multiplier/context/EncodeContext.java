@@ -8,13 +8,13 @@ import java.util.Map;
 
 public class EncodeContext {
 
-    private final Map<FieldExpr, BigInteger> expressions;
+  private final Map<FieldExpr, BigInteger> expressions;
 
-    public EncodeContext() {
-        this.expressions = new HashMap<>();
-    }
+  public EncodeContext() {
+    this.expressions = new HashMap<>();
+  }
 
-    public Map<FieldExpr, BigInteger> getExpressions() {
-        return expressions;
-    }
+  public Map<FieldExpr, BigInteger> getExpressions() {
+    return expressions;
+  }
 }

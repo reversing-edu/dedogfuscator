@@ -5,11 +5,15 @@ import org.objectweb.asm.tree.TypeInsnNode;
 
 public class CastExpr extends Expr {
 
-    public CastExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
-        super(tree, instruction, consume, produce);
-    }
+  public CastExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    super(tree, instruction, consume, produce);
+  }
 
-    public TypeInsnNode getInstruction() {
-        return (TypeInsnNode) super.getInstruction();
-    }
+  public TypeInsnNode getInstruction() {
+    return (TypeInsnNode) super.getInstruction();
+  }
+
+  public String getType() {
+    return getInstruction().desc;
+  }
 }

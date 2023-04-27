@@ -8,30 +8,30 @@ import java.util.List;
 
 public class TargetExpr extends Expr {
 
-    private final List<JumpExpr> targeters = new ArrayList<>();
+  private final List<JumpExpr> targeters = new ArrayList<>();
 
-    public TargetExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
-        super(tree, instruction, consume, produce);
-    }
+  public TargetExpr(ExprTree tree, AbstractInsnNode instruction, int consume, int produce) {
+    super(tree, instruction, consume, produce);
+  }
 
-    public List<JumpExpr> getTargeters() {
-        return targeters;
-    }
+  public List<JumpExpr> getTargeters() {
+    return targeters;
+  }
 
-    public Expr resolve() {
-        Expr expr = this;
-        while (expr != null && expr.getOpcode() == -1) {
-            expr = expr.getNext();
-        }
-        return expr != null ? expr : getParent();
+  public Expr resolve() {
+    Expr expr = this;
+    while (expr != null && expr.getOpcode() == -1) {
+      expr = expr.getNext();
     }
+    return expr != null ? expr : getParent();
+  }
 
-    public LabelNode getInstruction() {
-        return (LabelNode) super.getInstruction();
-    }
+  public LabelNode getInstruction() {
+    return (LabelNode) super.getInstruction();
+  }
 
-    @Override
-    public String toString() {
-        return getInstruction().toString();
-    }
+  @Override
+  public String toString() {
+    return getInstruction().toString();
+  }
 }
